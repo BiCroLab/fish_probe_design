@@ -33,8 +33,16 @@ Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
 
 #### Usage:
 
-The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/txt) script that manages a series of modules. <br>
-The following bash variables must be adjusted manually:
+The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/txt) script that manages a series of modules. The following bash variables must be adjusted manually to specify the correct inputs, and then the whole workflow can be launched using:
+         
+    sbatch main.sh
+         
+
+
+
+#### Inputs:
+
+The following bash variables are found in [`main.sh`](./pipeline_geneid/modules/txt) and must be adjusted manually:
 
  | Variable | Description | 
  | -------- | ----------- | 
@@ -44,14 +52,11 @@ The following bash variables must be adjusted manually:
  | **WORKDIR** | <br>Path to working / output directory<br><br> | 
  | **PIPELINE_MODS** | <br>Path to folder with modules<br><br> | 
 
-(((<ins>work in progress</ins>)))
 <br>
 
+(((<ins>work in progress</ins>))) <--- Currently, many other module-specific params cannot be controlled from [`main.sh`](./pipeline_geneid/modules/txt).
 
 
-#### Inputs:
-
-<br>
 
 
 
@@ -64,6 +69,16 @@ The following bash variables must be adjusted manually:
 
 
 #### Required Resources / Speed :
+
+
+
+Few potential bottlenecks when running the [`nHUSH`](./pipeline_geneid/modules/txt) and [`cycling query`](./pipeline_geneid/modules/txt) steps. For each input isoform: 
+
+- [`nHUSH`](./pipeline_geneid/modules/txt) ~1-2 hours with 5CPU / 35-40GB memory
+- [`cycling query`](./pipeline_geneid/modules/txt) ~ ??? hours with ? CPU / ?-? GB memory (((<ins>work in progress</ins>))) 
+
+All tests are related to the hg38 genome reference. Smaller genomes may result in lower memory usage and runtime.
+
 
 
 
