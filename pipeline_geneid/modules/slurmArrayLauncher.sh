@@ -1,16 +1,13 @@
 #!/bin/bash
 
-    #WORKDIR="/group/bienko/projects/RNAFISH/Analysis_RNAmode5/Genes/" ###debug, to be deleted
-    ###debug: remove them when running
-    #ARRAY_MAX=3 ; HPC_MAX=5 ; MAX_RUNNING_JOBS=5
-
 
 slurmArrayLauncher() {
 
     ### -- Setting default values. Overwritten by user-defined variables.
-    MAX_RUNNING_JOBS=30 
-    #; CPU_PER_JOB=1 ; MEM_PER_JOB="1M" ; RUN_TIME="00:01:00"  ###debug
-    ARRAY_MAX=200 ; HPC_MAX=800
+    MAX_RUNNING_JOBS=30 ; CPU_PER_JOB=5 ; MEM_PER_JOB="40G" ; RUN_TIME="24:00:00"
+    
+    ARRAY_MAX=200  ### Each SLURM Array will have a maximum of ${ARRAY_MAX} elements
+    HPC_MAX=800    ### No more than ${HPC_MAX} jobs can co-exist in the HPC (both running / pending).
 
 
     while [[ "$#" -gt 0 ]]; do
@@ -28,15 +25,14 @@ slurmArrayLauncher() {
     done
 
 
-        # TO DO MAKE SOME DEFAULT --command-args FOR EACH FUNCTION? MAYBE NOT NEEDED
-
     ### Assuming folders of interest start with a fixed pattern (ENSG) #Note will be a possible issue for genes coming from ONT/Sala annotation
-    SPLIT_FOLDERS=$( ls ${WORKDIR}/split/ | grep "ENSG" )
-    LOGS="${WORKDIR}/logs/$(date +%d%h.%H%M)" && mkdir -p ${LOGS}
+    ## SPLIT_FOLDERS=$( ls ${WORKDIR}/split/ | grep -e "ENSG" -e "PATTERN2" ) # Test if grep is actually needed
+    SPLIT_FOLDERS=$( ls ${WORKDIR}/split/ ) # Test if this works anyway. Probably yes.
+    LOGS="${WORKDIR}/logs/$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
 
     ### Creating a file storing the total number of input entries.
     ### Then, splitting it into sub-files, each having a ${HPC_MAX} number of rows.
-    mkdir -p ${WORKDIR}/slurm.tmp/ && cd ${WORKDIR}/slurm.tmp/
+    mkdir -p -m 770 ${WORKDIR}/slurm.tmp/ && cd ${WORKDIR}/slurm.tmp/
     TOTAL_JOBS_INPUTS="${WORKDIR}/slurm.tmp/.split.folders.txt"
     rm -f "${TOTAL_JOBS_INPUTS}"; touch "${TOTAL_JOBS_INPUTS}"
     for SD in ${SPLIT_FOLDERS}; do echo ${SD} >> "${TOTAL_JOBS_INPUTS}"; done
@@ -48,24 +44,16 @@ slurmArrayLauncher() {
 
     ### Launching a slurm array for each sub-file group.
     SLURM_ARRAY_GROUPS=$( ls ${WORKDIR}/slurm.tmp | grep "slurm_subgroup" ); ARRAY_COUNTER=0
-    
-
-  #COMMAND="prbRun_nHUSH" ###DEBUG: to be deleted
 
     for GROUP in ${SLURM_ARRAY_GROUPS}; do
     
-    # for GROUP in {1..2}; do
-
         ### Passing ${GROUP} full path to each slurm array script
         GROUP="${WORKDIR}/slurm.tmp/${GROUP}" ; export GROUP=${GROUP}
 
-        
         ### Total number of jobs in current array:
         TOTAL_JOBS_COUNT=$(cat ${GROUP} | wc -l ); ((ARRAY_COUNTER++))
-        # TOTAL_JOBS_COUNT=1 ##debug, to be deleted
+        ### 
         echo -e "Processing Array #${ARRAY_COUNTER} - $(basename ${GROUP}) - (${TOTAL_JOBS_COUNT})"
-
-
     
         ### -------------------------------------------------------------------------------
         ### Slurm does not allow an infinite number of jobs to exist in the HPC queue.
@@ -80,18 +68,18 @@ slurmArrayLauncher() {
           fi
         done
 
-        ### Submit the array job
+        ### Submit the current array job
         sbatch \
-        --nodes 1 \
-        --ntasks "${CPU_PER_JOB}" \
-        --mem="${MEM_PER_JOB}" \
-        --time="${RUN_TIME}" \
-        --job-name "${COMMAND}" \
-        --export=ALL \
-        --array=1-${TOTAL_JOBS_COUNT}%${MAX_RUNNING_JOBS} \
-        -e "${LOGS}/slurm-%x_%A_%a.txt" \
-        -o "${LOGS}/slurm-%x_%A_%a.txt" \
-        --wrap="${COMMAND} ${COMMAND_ARGS}"
+         --nodes 1 \
+         --ntasks "${CPU_PER_JOB}" \
+         --mem="${MEM_PER_JOB}" \
+         --time="${RUN_TIME}" \
+         --job-name "${COMMAND}" \
+         --export=ALL \
+         --array=1-${TOTAL_JOBS_COUNT}%${MAX_RUNNING_JOBS} \
+         -e "${LOGS}/slurm-%x_%A_%a.txt" \
+         -o "${LOGS}/slurm-%x_%A_%a.txt" \
+         --wrap="${COMMAND} ${COMMAND_ARGS}"
 
     done
 
@@ -100,6 +88,7 @@ slurmArrayLauncher() {
 
 
 export -f slurmArrayLauncher; echo -e "> slurmArrayLauncher"
+
 
     ### Usage Example:
 
