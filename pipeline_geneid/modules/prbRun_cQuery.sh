@@ -1,11 +1,9 @@
 #!/bin/bash
 
 
-
 prbRun_cQuery() {
 
-
-     LENGTH=40 ### Default value, overwritten by setting another --length-oligos
+      LENGTH=40 ### Default value, overwritten by setting another --length-oligos
 
       while [[ "$#" -gt 0 ]]; do
           case "$1" in
@@ -16,8 +14,6 @@ prbRun_cQuery() {
           esac
           shift
       done
-
-      ### TODO: add other flags to control the arguments of nHUSH without having to change this code later on?
 
 
       ### The ${GROUP} variable is inherited from <slurmArrayLauncher>
@@ -30,8 +26,9 @@ prbRun_cQuery() {
       WORKDIR="${WORKDIR}/split/${GENE_ID}" && cd ${WORKDIR}
       
       ### Calculating minimum ${STEPDOWN} value for the current ${GENE_ID}
+      ### By default, it will correspond to 5% of ${MIN_WIDTH}    
       MIN_WIDTH=$(cat ${WORKDIR}/data/rois/all.regions.tsv | cut -f 7 | tail -n+2 | sort -k1,1n | uniq | head -n1)
-      STPERC=5 ## ${STEPDOWN} = 5% of MIN_WIDTH
+      STPERC=5 
       STEPDOWN=$( echo | awk -v W=${MIN_WIDTH} -v P=${STPERC} '{ M=W/100*P; printf "%.f\n",int(M+0.5)}')
 
 
@@ -45,33 +42,32 @@ prbRun_cQuery() {
       echo -e "Requested CPUs: ${CPU_PER_JOB}"
       echo -e "Working Directory: \"$(pwd)\""
 
-      ### -- Running prb functions:  TEMPORARY:::::: WORK IN PROGRESS
-  
-
-                                    # ${LENGTH}
-      ${prb} reform_hush_combined RNA 40 21 3  ## should be quick
-
-      ${prb} melt_secs_parallel RNA            ## should be quick
-
-      ${prb} build-db_BL -f q_bl -m 32 -i 6 -L ${LENGTH} -c 100 -d 8 -T 72 -y    ## bit slower, but quick
 
 
-      ## super slow and problematic:
-      ### echo -e "$(date) <---- starting"  > ${WORKDIR}/cycling_query_duration.txt; echo $date
+      ### -- Running prb functions
 
-                                                            #${CPU_PER_JOB}
-      #${prb} cycling_query -s DNA -L ${LENGTH} -m 8 -c 100 -t 40 -g 2500 -stepdown 250 -greedy
-      #${prb} cycling_query -s RNA -L ${LENGTH} -m 8 -c 100 -t 40 -g 2500 -stepdown 250 -greedy
+      ## Quite quick. Add header description to this step?
+      ${prb} reform_hush_combined RNA ${LENGTH} 21 3  
+      
+      ## Quite quick. Add header description to this step?
+      ${prb} melt_secs_parallel RNA
+
+      ## Quite quick. Add header description to this step?
+      ${prb} build-db_BL -f q_bl -m 32 -i 6 -L ${LENGTH} -c 100 -d 8 -T 72 -y
+
+
+      ### Launching Cycling Query:
+      echo -e "$(date) <---- starting"  
       ${prb} cycling_query -s RNA -L ${LENGTH} -m 8 -c 100 -t ${CPU_PER_JOB} -g 2500 -stepdown ${STEPDOWN} -greedy
-
-    
-      ### crashed <---- "window_id" field must be a numeric value
-      # echo -e "$(date) <---- ending"  >> ${WORKDIR}/cycling_query_duration.txt; echo $date
+     
+      ### Clearing large temporary files. This part should be fixed, as it is still problematic.
+      rm "${WORKDIR}/data/ref/genome.fa.aD" "{WORKDIR}/data/ref/genome.fa.aB8" "${WORKDIR}/data/ref/genome.fa.aH8"
+      echo -e "$(date) <---- ending"
 
       ${prb} summarize_probes_final
       ${prb} visual report
 
-
+      ### Space to add extra visual reports / summaries, if needed
 
 }
 
