@@ -44,11 +44,11 @@ prbDesign002() {
     ### Extracting Genome Reference Prefix
     REF=$(basename ${GENOME} | sed -e 's/.fa.gz$//' -e 's/.fa$//' -e 's/.fasta$//' -e 's/.fna.gz$//')
 
-    #MAX_OLIGOS=1000 ### (window column)--- let it vary dynamically TODO
+    ### Setting MAX number of oligos to be searched for the current elements according to its length
     MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} '{ M=W/(L+10);printf "%.f\n",int(M+0.5)}')
 
-    mkdir -p ${WORKDIR}/split/${GENE_ID}/data/rois
-    mkdir -p ${WORKDIR}/split/${GENE_ID}/data/regions
+    mkdir -p -m 770 ${WORKDIR}/split/${GENE_ID}/data/rois
+    mkdir -p -m 770 ${WORKDIR}/split/${GENE_ID}/data/regions
 
     ### Initializing the headers for < all_regions.tsv >
     h01="Window_start" ; h02="Window_end"  ; h03="window_id" ; h04="chrom"   ; h05="DNA_start";
@@ -82,13 +82,12 @@ prbDesign002() {
       v11=""                                    ## (h11) "Gene_end"
       v12=${STRANDNESS}                         ## (h12) "Gene_strand"
       v13=${GENE_NAME}                          ## (h13) "Gene_name"
-      v14=${TRANSCRIPT_ID}                            ## (h14) "Gene_id"
+      v14=${TRANSCRIPT_ID}                      ## (h14) "Gene_id"
       v15="RNA"                                 ## (h15) "design_type"
       ### -------------------------------------------------------------------------
       values="${v01}\t${v02}\t${v03}\t${v04}\t${v05}\t${v06}\t${v07}\t${v08}\t${v09}\t${v10}\t${v11}\t${v12}\t${v13}\t${v14}\t${v15}"
 
       ### Saving values to ./data/rois
-    #  echo -e ${values} >> ${WORKDIR}/split/${GENE_ID}/data/rois/all.regions.tsv
       echo -e ${values} >> ${WORKDIR}/split/${GENE_ID}/data/rois/all_regions_tsv
 
       ### Saving sequences to ./data/regions
