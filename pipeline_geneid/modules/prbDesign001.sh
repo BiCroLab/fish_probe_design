@@ -20,7 +20,7 @@ prbDesign001() {
             --gene-id|-i) GENE_ID="${2}"; shift ;;
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --gene-annotation|-a) ANNOT_INPUT="${2}"; shift ;;
-            --ccds-only|-c) CCDS_FILTER="${2}"; shift ;;
+            --ccds-only|-c) CCDS_FILTER="TRUE"; shift ;;
             --directory|-d) BASEPATH="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
         esac
@@ -28,9 +28,10 @@ prbDesign001() {
     done
 
 
-                ### TODO = specify conda environment? --- required: bedtools
-   #source "/home/${USER}/miniconda3/bin/activate" gt ### module load bedtools?             --conda-env-name|
-    module load bedtools2/2.31.0
+   
+   ### --conda-env-name|-e) CUSTOM_CONDA_ENVNAME="${2}"; shift ;;
+   ### source "${HOME}/miniconda3/bin/activate" ${CUSTOM_CONDA_ENVNAME}
+   module load bedtools2/2.31.0
   
    echo -e "${GENE_ID} ($(date))";
 
@@ -40,7 +41,9 @@ prbDesign001() {
 
 
 
-   ANNOT_FILTERED="${WORKDIR}/split/${GENE_ID}/${GENE_ID}.annot.tsv.gz" 
+   ANNOT_FILTERED="${WORKDIR}/split/${GENE_ID}/${GENE_ID}.annot.tsv.gz"
+   ANNOT_FILTERED_TMP="${WORKDIR}/split/${GENE_ID}/annot.tmp"
+   
    mkdir -p -m 770 ${WORKDIR}/split/${GENE_ID}
 
 
@@ -61,10 +64,21 @@ prbDesign001() {
    fi
 
 
-
+   ### Extracting Gene from input GTF object. CCDS-filtering is applied here, if requested.
+   if [[ "$CCDS_FILTER" == "TRUE" ]]; then
+       zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} | grep -w "ccdsid"  > ${ANNOT_FILTERED_TMP}
+       echo -e "Filtering transcripts without CCDS information";  
+       if [[ $(cat ${ANNOT_FILTERED_TMP} | wc -l) == 0 ]]; then 
+          echo -e "No CCDS tag found for ${GENE_ID}. All isoforms will be selected."
+          zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} > ${ANNOT_FILTERED_TMP}
+       fi
+   else
+       zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} > ${ANNOT_FILTERED_TMP}
+   fi
+        
 
    ### 1. Extracting Exons from input GTF object
-   zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} \
+   zcat ${ANNOT_FILTERED_TMP} | grep -w ${GENE_ID} \
     | awk 'BEGIN{FS=OFS="\t"} { 
      if($3 == "exon") { split($9, X, ";");
       for(i in X) { if(X[i] ~ /gene_id/) {              # looking for <gene_id>
@@ -76,8 +90,8 @@ prbDesign001() {
                 gsub("\"", "", X[i]);
                 gsub("\"", "", X[k]); 
                 gsub("\"", "", X[j]); 
-                print $1, $4, $5, X[i], $6, $7, X[k], X[j] ; break; }}}}}}}}' \
-    | sed s'/ //'g | gzip > ${ANNOT_FILTERED}
+                print $1, $4-1, $5, X[i], $6, $7, X[k], X[j] ; break; }}}}}}}}' \
+    | sed s'/ //'g | gzip > ${ANNOT_FILTERED} && rm ${ANNOT_FILTERED_TMP}
 
     ### 2. Extracting Strandness, Extracting List of Transcripts
     STRANDNESS=$(zcat ${ANNOT_FILTERED} | cut -f 6 | sort | uniq)
@@ -108,8 +122,8 @@ prbDesign001() {
         echo -e " >>> ${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}bp"
 
         ### Note that all sequences are obtained from 5' -> 3' 
-        ### Strandness is not being considered here.
-        ### Later, make sure the pipeline actually computes reverse complement.
+        ### Strandness is not being considered here, as nHUSH will be considering it.
+
         
     done
 
