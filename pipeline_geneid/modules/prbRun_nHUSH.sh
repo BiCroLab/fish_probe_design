@@ -43,6 +43,10 @@ prbRun_nHUSH() {
       ### -- Running prb functions: [get_oligos] and [run_nHUSH]
       ${prb} run_nHUSH -d RNA -t ${CPU_PER_JOB} -L ${LENGTH} -l 21 -m 3 -i 14 -y
 
+      rm ${WORKDIR}/data/ref/genome.fa.aD
+      rm ${WORKDIR}/data/ref/genome.fa.aB8
+      rm ${WORKDIR}/data/ref/genome.fa.aH8
+     
 }
 
 
