@@ -33,7 +33,7 @@ Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
 
 #### Usage:
 
-The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/txt) script that manages a series of modules. The following bash variables must be adjusted manually to specify the correct inputs, and then the whole workflow can be launched using:
+The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script that manages a series of modules. The following bash variables must be adjusted manually to specify the correct inputs, and then the whole workflow can be launched using:
          
     sbatch main.sh
          
@@ -42,7 +42,7 @@ The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/txt) script tha
 
 #### Inputs:
 
-The following bash variables are found in [`main.sh`](./pipeline_geneid/modules/txt) and must be adjusted manually:
+The following bash variables are found in [`main.sh`](./pipeline_geneid/modules/main.sh) and must be adjusted manually:
 
  | Variable | Description | 
  | -------- | ----------- | 
@@ -54,7 +54,7 @@ The following bash variables are found in [`main.sh`](./pipeline_geneid/modules/
 
 <br>
 
-(((<ins>work in progress</ins>))) <--- Currently, many other module-specific params cannot be controlled from [`main.sh`](./pipeline_geneid/modules/txt).
+(((<ins>work in progress</ins>))) <--- Currently, many other module-specific params cannot be controlled from [`main.sh`](./pipeline_geneid/modules/main.sh).
 
 
 
