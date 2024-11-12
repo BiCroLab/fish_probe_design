@@ -15,6 +15,8 @@ prbDesign001() {
     #### - Next, these outputs will be used in the following prb function.
     #### -------------------------------------------------------- ####
 
+    CCDS_FILTER="FALSE"
+
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --gene-id|-i) GENE_ID="${2}"; shift ;;
@@ -27,18 +29,13 @@ prbDesign001() {
         shift
     done
 
-
+    # Print value of CCDS_FILTER for debugging
+    echo "CCDS_FILTER is set to: '${CCDS_FILTER}'"
    
-   ### --conda-env-name|-e) CUSTOM_CONDA_ENVNAME="${2}"; shift ;;
-   ### source "${HOME}/miniconda3/bin/activate" ${CUSTOM_CONDA_ENVNAME}
+   ### load bedtools from module or conda enviroment
    module load bedtools2/2.31.0
   
    echo -e "${GENE_ID} ($(date))";
-
-                 ### TODO = --ccds-only: OPTIONAL BEHAVIOUR:
-                 ### FILTER OUT TRANSCRIPTS WITHOUT CCDS TAGS
-                 #    zcat ${ANNOT_INPUT}  | grep -w "ccdsid"
-
 
 
    ANNOT_FILTERED="${WORKDIR}/split/${GENE_ID}/${GENE_ID}.annot.tsv.gz"
@@ -63,22 +60,32 @@ prbDesign001() {
      fi
    fi
 
+    ### Taking ENGid without dotted version (ENSGxxx.xx > ENSGxxx )
+    DOTLESS_GENE_ID=$(echo ${GENE_ID} | cut -f1 -d ".")
 
    ### Extracting Gene from input GTF object. CCDS-filtering is applied here, if requested.
    if [[ "$CCDS_FILTER" == "TRUE" ]]; then
-       zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} | grep -w "ccdsid"  > ${ANNOT_FILTERED_TMP}
+       echo "Applying CCDS filter to ${DOTLESS_GENE_ID}"
+       zcat ${ANNOT_INPUT} | grep -w ${DOTLESS_GENE_ID} | grep -E 'tag "CCDS"|ccdsid'  > ${ANNOT_FILTERED_TMP}
        echo -e "Filtering transcripts without CCDS information";  
-       if [[ $(cat ${ANNOT_FILTERED_TMP} | wc -l) == 0 ]]; then 
+
+       # Check if the filtering was successful
+       #if [[ $(cat ${ANNOT_FILTERED_TMP} | wc -l) == 0 ]]; then 
+       if [[ ! -s ${ANNOT_FILTERED_TMP} ]]; then
           echo -e "No CCDS tag found for ${GENE_ID}. All isoforms will be selected."
-          zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} > ${ANNOT_FILTERED_TMP}
+          zcat ${ANNOT_INPUT} | grep -w ${DOTLESS_GENE_ID} > ${ANNOT_FILTERED_TMP}
+        else
+            echo "CCDC transcripts found"  
        fi
    else
-       zcat ${ANNOT_INPUT} | grep -w ${GENE_ID} > ${ANNOT_FILTERED_TMP}
+       echo "CCDS filter not requested; selecting all isoforms."
+       zcat ${ANNOT_INPUT} | grep -w ${DOTLESS_GENE_ID} > ${ANNOT_FILTERED_TMP}
    fi
         
 
    ### 1. Extracting Exons from input GTF object
-   zcat ${ANNOT_FILTERED_TMP} | grep -w ${GENE_ID} \
+
+   cat ${ANNOT_FILTERED_TMP} | grep -w ${DOTLESS_GENE_ID} \
     | awk 'BEGIN{FS=OFS="\t"} { 
      if($3 == "exon") { split($9, X, ";");
       for(i in X) { if(X[i] ~ /gene_id/) {              # looking for <gene_id>

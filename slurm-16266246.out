@@ -1,0 +1,19 @@
+INFO: localdir at /localscratch/16266246.raquel.andre
+INFO: your job will run on local system.
+Importing Pipeline Modules:
+> prbDesign001
+> prbDesign002
+> prbInitLinks
+> prbRun_cQuery
+> prbRun_nHUSH
+> slurmArrayLauncher
+/cm/local/apps/slurm/var/spool/job16266246/slurm_script: line 44: /scratch/raquel.andre/PROBES/Pipeline_LS_20241029/modules/ENSGgenelistFunkGen.txt: No such file or directory
+
+real	0m0.001s
+user	0m0.000s
+sys	0m0.000s
+Creating links to all subdirectories - Tue Nov 12 12:34:49 CET 2024
+No directories found!
+Total folders linked: 0
+ls: cannot access '/group/bienko/projects/RNAFISH/Output_FunkGlist/split/': No such file or directory
+Found a total of 0 arrays, each with up to 200 elements
