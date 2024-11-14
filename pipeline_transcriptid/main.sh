@@ -50,68 +50,42 @@ prbReferenceLinker -w ${WORKDIR}
 ### ----------------------------------------------------------------------------------
 ### ----------------------------------------------------------------------------------
 
-#output genes from gene_list with empty split/ENSG*/data/rois/all_regions_tsv 
-# echo " Looking for genes with have empty rois tsv ..."
-# wc -l split/*/*/data/rois/all_regions.tsv | awk '$1 == 1 {print $2}' | cut -d'/' -f 2 
+prbInputCheck -w ${WORKDIR}
 
 
-   #### not seen yet ---->
+### nHUSH
+ 
+CPU_PER_JOB=8
+MEM_PER_JOB="40G"
+TIME_PER_JOB="08:00:00"
+
+slurmArrayLauncher \
+ --command-name "prbRun_nHUSH"    \
+ --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH}" \
+ --cpu-per-job "${CPU_PER_JOB}" \
+ --mem-per-job "${MEM_PER_JOB}" \
+ --time-req "${TIME_PER_JOB}" \
+ --work-dir ${WORKDIR}
 
 
 
-
-# #  ##step nHUSH (mers for both strands are calculated)
-CPU_PER_JOB=1
-MEM_PER_JOB="1"
-TIME_PER_JOB="00:05:00"
-
-# CPU_PER_JOB=10
-# MEM_PER_JOB="40G"
-# TIME_PER_JOB="25:00:00"
-
-
-     slurmArrayLauncher \
-      --command-name "prbRun_nHUSH"    \
-      --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH}" \
-      --cpu-per-job "${CPU_PER_JOB}" \
-      --mem-per-job "${MEM_PER_JOB}" \
-      --time-req "${TIME_PER_JOB}" \
-      --work-dir ${WORKDIR}
-
-
-## output genes that run out of time during nHUSH step
-# for file in ${WORKDIR}/logs/*/*nHUSH*.txt
-#     echo ${file}
-#     grep -l "DUE TO TIME LIMIT \*\*\*" ${file} | xargs -I {} sed -n '5p' {} > ${WORKDIR}/failed_directories.txt
-# done    
-
-# while read -r line; do
-#     # Extract the directory path within the quotes
-#     directory=$(echo "$line" | sed -n 's/.*"\(.*\)".*/\1/p')
-#     echo "$directory"
-#     #visualise number of transcripts per gene
-#     wc -l "$directory/data/rois/all_regions_tsv"
-# done <  ${WORKDIR}/directories.txt
-
-
-### <------------------------------ Stall main.sh as long as prbRun_nHUSH jobs are running
+ ### <------------------------------ Stall main.sh as long as prbRun_nHUSH jobs are running
 slurmBlocker --job-name "prbRun_nHUSH" -s 60
-### <------------------------------ Resume main.sh when prbRun_nHUSH jobs are finished
+ ### <------------------------------ Resume main.sh when prbRun_nHUSH jobs are finished
 
 
+### cQuery
 
-### prbRun_cQuery
+CPU_PER_JOB=10
+MEM_PER_JOB="30G"
+TIME_PER_JOB="14:00:00"
 
-# CPU_PER_JOB=10
-# MEM_PER_JOB="30G"
-# TIME_PER_JOB="15:00:00"
-
-#     slurmArrayLauncher \
-#      --command-name "prbRun_cQuery" \
-#      --command-args "--work-dir ${WORKDIR} --cpu-per-job ${CPU_PER_JOB} --length-oligos ${OLIGO_LENGTH}" \
-#      --cpu-per-job "${CPU_PER_JOB}" \
-#      --mem-per-job "${MEM_PER_JOB}" \
-#      --time-req "${TIME_PER_JOB}" \
-#      --work-dir ${WORKDIR}
+slurmArrayLauncher \
+ --command-name "prbRun_cQuery" \
+ --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH}" \
+ --cpu-per-job "${CPU_PER_JOB}" \
+ --mem-per-job "${MEM_PER_JOB}" \
+ --time-req "${TIME_PER_JOB}" \
+ --work-dir ${WORKDIR}
 
 
