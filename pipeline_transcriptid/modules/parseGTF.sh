@@ -11,6 +11,7 @@ parseGTF() {
         shift
     done
 
+    ### Extract gene_id, gene_name and transcript_id values from GTF
     zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
       for(i in X) { if(X[i] ~ /gene_id/) {
          for(k in X) { if(X[k] ~ /gene_name/) {

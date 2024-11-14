@@ -134,7 +134,7 @@ prbDesign001() {
     rm ${ANNOT_FILTERED_TMP}
     rm ${ANNOT_ISOFORM%%.tsv.gz}.concat.unstranded.tmp 
 
-
+    ### 8. Printing final width before exiting
     WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
     echo -e " >>> ${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}bp"
 
