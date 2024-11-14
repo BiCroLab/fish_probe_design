@@ -61,17 +61,22 @@ prbReferenceLinker -w ${WORKDIR}
 
 
 # #  ##step nHUSH (mers for both strands are calculated)
+CPU_PER_JOB=1
+MEM_PER_JOB="1"
+TIME_PER_JOB="00:05:00"
+
 # CPU_PER_JOB=10
 # MEM_PER_JOB="40G"
 # TIME_PER_JOB="25:00:00"
 
-#      slurmArrayLauncher \
-#       --command-name "prbRun_nHUSH"    \
-#       --command-args "--work-dir ${WORKDIR} --cpu-per-job ${CPU_PER_JOB} --length-oligos ${OLIGO_LENGTH}" \
-#       --cpu-per-job "${CPU_PER_JOB}" \
-#       --mem-per-job "${MEM_PER_JOB}" \
-#       --time-req "${TIME_PER_JOB}" \
-#       --work-dir ${WORKDIR}
+
+     slurmArrayLauncher \
+      --command-name "prbRun_nHUSH"    \
+      --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH}" \
+      --cpu-per-job "${CPU_PER_JOB}" \
+      --mem-per-job "${MEM_PER_JOB}" \
+      --time-req "${TIME_PER_JOB}" \
+      --work-dir ${WORKDIR}
 
 
 ## output genes that run out of time during nHUSH step

@@ -27,7 +27,10 @@ slurmArrayLauncher() {
 
     ### Assuming folders of interest start with a fixed pattern (ENSG) #Note will be a possible issue for genes coming from ONT/Sala annotation
     ## SPLIT_FOLDERS=$( ls ${WORKDIR}/split/ | grep -e "ENSG" -e "PATTERN2" ) # Test if grep is actually needed
-    SPLIT_FOLDERS=$( ls ${WORKDIR}/split/ ) # Test if this works anyway. Probably yes.
+    SPLIT_FOLDERS=$( ls ${WORKDIR}/split/*/ ) # Test if this works anyway. Probably yes.
+    SPLIT_FOLDERS=$( find ${WORKDIR}/split -mindepth 2 -maxdepth 2 -type d)
+
+
     LOGS="${WORKDIR}/logs/$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
 
     ### Creating a file storing the total number of input entries.

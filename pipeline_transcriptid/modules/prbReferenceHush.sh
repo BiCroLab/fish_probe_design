@@ -12,6 +12,7 @@ prbReferenceHush() {
         shift
     done
 
+    ### Generating genome.aD reference files. This might take around 20-30 minutes.
     CONTAINER="/group/bienko/containers/prb.sif" ; module load --silent singularity
     WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
     HUSH="singularity exec --bind /group/ --workdir ${WORKTMP} ${CONTAINER} hushp"
@@ -23,7 +24,7 @@ prbReferenceHush() {
      --nodes 1 \
      --ntasks "${CPU}" \
      --mem="40G" \
-     --time="01:00:00" \
+     --time="00:50:00" \
      --job-name "prbReferenceHush" \
      --export=ALL \
      -e "${LOGS}/slurm-%x_%A_%a.txt" \
