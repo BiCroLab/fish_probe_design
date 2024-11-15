@@ -4,9 +4,9 @@
 slurmArrayLauncher() {
 
     ### -- Setting default values. Overwritten by user-defined variables.
-    MAX_RUNNING_JOBS=30 ; CPU_PER_JOB=5 ; MEM_PER_JOB="40G" ; RUN_TIME="24:00:00"
+    MAX_RUNNING_JOBS=50 ; CPU_PER_JOB=5 ; MEM_PER_JOB="40G" ; RUN_TIME="24:00:00"
     
-    ARRAY_MAX=200  ### Each SLURM Array will have a maximum of ${ARRAY_MAX} elements
+    ARRAY_MAX=400  ### Each SLURM Array will have a maximum of ${ARRAY_MAX} elements
     HPC_MAX=800    ### No more than ${HPC_MAX} jobs can co-exist in the HPC (both running / pending).
 
 
@@ -19,6 +19,8 @@ slurmArrayLauncher() {
             --cpu-per-job|-c) CPU_PER_JOB="${2:-$CPU_PER_JOB}"; shift ;;
             --mem-per-job|-m) MEM_PER_JOB="${2:-$MEM_PER_JOB}"; shift ;;
             --time-req|-t) RUN_TIME="${2:-$RUN_TIME}"; shift ;;
+            --slurm-array-max|-Q) ARRAY_MAX="${2:-$ARRAY_MAX}"; shift ;;
+            --slurm-hpc-max|-Q) HPC_MAX="${2:-$HPC_MAX}"; shift ;;
             *) echo "Unknown option: $1" >&2; return 1 ;;
         esac
         shift
