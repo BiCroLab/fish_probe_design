@@ -44,7 +44,7 @@ prbRun_cQuery() {
       ### -- Running prb functions
 
       ## Quite quick. Add header description to this step?
-      ${prb} reform_hush_combined RNA ${LENGTH} 21 3  
+      ${prb} reform_hush_combined RNA ${LENGTH} ${SUBLENGTH} 3  
 
       ## Quite quick. Add header description to this step?
       ${prb} melt_secs_parallel RNA
