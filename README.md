@@ -60,7 +60,7 @@ The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script
 
 <br>
 
-All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be customized depending on HPC resources.
+All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be customized as:
 
  | *slurmArrayLauncher* | Description |
  | --------------------------  | ----------- |
