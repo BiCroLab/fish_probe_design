@@ -1,1 +1,0 @@
-echo "hellooo success"
