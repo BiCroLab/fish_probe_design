@@ -1,9 +1,5 @@
 #!/bin/bash
 
-ANNOT_INPUT="/group/bienko/projects/RNAFISH/Scripts_PRB_git/faked.bed"
-
-
-
 prbReadInputBed() {
 
     #### -------------------------------------------------------- ####
@@ -26,6 +22,7 @@ prbReadInputBed() {
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
+            --zero-based-fix|-z) ZEROBASED="${2}"; shift ;;
         esac
         shift
     done
@@ -41,7 +38,7 @@ prbReadInputBed() {
    echo -e "Saved ${WORKDIR}/prb_bed.id.txt.gz" 
 
 
-   zcat ${ANNOT_INPUT} |  while read -r INPUT_ID; do
+   zcat ${WORKDIR}/prb_bed.id.txt.gz | while read -r INPUT_ID; do
     ### Creating one subset bed file for each region
     REGION_CHR=$(echo "${INPUT_ID}" | awk '{print $1}')
     REGION_START=$(echo "{$INPUT_ID}" | awk '{print $2}')
@@ -57,7 +54,7 @@ prbReadInputBed() {
 
 
 
-    ### 1. Checking inputs
+    ### Checking inputs
     ### Breaking code if FASTA has weird chromosome names in its header
     if [[ ! $(zcat ${GENOME} | head -n1) =~ ">chr" ]]; then
       if [[ $(zcat  ${WORKDIR}/prb_bed.id.txt.gz | cut -f 1 | head -n1) =~ "chr" ]]; then
@@ -76,35 +73,19 @@ prbReadInputBed() {
 
 
 
-    ### 4. Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.fa.gz;
+    ### Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
+    bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
 
-    ### 5. Concatenating FASTA of all isoform-specific exons
-    zcat ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz \
-      | awk -v ID="${TRANSCRIPT_ID}" 'BEGIN{FS=OFS="\t"} { 
-                if (/^>/) { next; } else { seq = seq $0; }
-            } END { print ">" ID; print seq; }' \
-      | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.concat.unstranded.tmp
+    ### Adjusting input sequence based on strandness ---- not implemented
+    # if [[ ${STRANDNESS} == "-" ]]; --------------------  
 
-    ### 6. Adjust input sequence based on strandness
-    if [[ ${STRANDNESS} == "-" ]];
-      then 
-        ### Getting reverse complement 
-        zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.unstranded.tmp \
-        | awk '/^>/ {print; next} {print | "tr \"ACGTacgt\" \"TGCAtgca\" | rev"}' \
-        | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz
-      else
-        zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.unstranded.tmp \
-        | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz
-    fi
+    ### Printing final width before exiting
+    WIDTH_ISOFORM=$(zcat ${REGION_FILE%%.bed}.concat.fa.gz | grep -v "^>" | wc -c)
+    MISSING_NTS=$(zcat "${REGION_FILE%%.bed}.concat.fa.gz" | grep -v "^>" | grep -o '[nN]' | wc -l)
 
-    ### 7. Clearing temporary files
-    rm ${ANNOT_FILTERED_TMP}
-    rm ${ANNOT_ISOFORM%%.tsv.gz}.concat.unstranded.tmp 
 
-    ### 8. Printing final width before exiting
-    WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
-    echo -e " >>> ${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}bp"
+    echo -e " >>> ${REGION_ID}\t(+)\t${WIDTH_ISOFORM}bp"
+    # echo -e " >>> N nucleotides: ${MISSING_NTS}"
 
 
 
@@ -127,20 +108,16 @@ prbReadInputBed() {
     header="${h01}\t${h02}\t${h03}\t${h04}\t${h05}\t${h06}\t${h07}\t${h08}\t${h09}\t${h10}\t${h11}\t${h12}\t${h13}\t${h14}\t${h15}"
     echo -e ${header} > ${WORKDIR}/split/regions/${REGION_ID}/data/rois/all_regions.tsv
 
-    ### tocheck, maybe skippable now;
-    ANNOT_ISOFORM="${WORKDIR}/split/regions/${REGION_ID}/iso/${TRANSCRIPT_ID}.annot.tsv.gz"
-    ### Calculating transcript length to assign < Window_start > and < Window_end >
-    WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
     ### Setting MAX number of oligos to be searched for the current elements according to its length
     MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} '{ M=W/(L+10);printf "%.f\n",int(M+0.5)}')
 
 
     ### Assigning values for each input transcript isoform to < all_regions.tsv >
     ### -------------------------------------------------------------------------
-    v01="1"                                   ## (h01) "Window_start"
-    v02=$(( ${v01} + ${WIDTH_ISOFORM} ))      ## (h02) "Window_end"
+    v01=${REGION_START}                       ## (h01) "Window_start"
+    v02=${REGION_END}                         ## (h02) "Window_end"
     v03=1                                     ## (h03) "window_id"
-    v04="chr1"                                ## (h04) "chrom"
+    v04=${REGION_CHR}                         ## (h04) "chrom"
     v05=""                                    ## (h05) "DNA_start"
     v06=""                                    ## (h06) "DNA_end"
     v07=${MAX_OLIGOS}                         ## (h07) "window"
@@ -148,9 +125,9 @@ prbReadInputBed() {
     v09=${LENGTH}                             ## (h09) "length"
     v10=""                                    ## (h10) "Gene_start"
     v11=""                                    ## (h11) "Gene_end"
-    v12=${STRANDNESS}                         ## (h12) "Gene_strand"
-    v13=${GENE_NAME}                          ## (h13) "Gene_name"
-    v14=${TRANSCRIPT_ID}                      ## (h14) "Gene_id"
+    v12="+"                                   ## (h12) "Gene_strand"
+    v13=${REGION_ID}                          ## (h13) "Gene_name"
+    v14=${REGION_ID}                          ## (h14) "Gene_id"
     v15="RNA"                                 ## (h15) "design_type"
     ### -------------------------------------------------------------------------
     values="${v01}\t${v02}\t${v03}\t${v04}\t${v05}\t${v06}\t${v07}\t${v08}\t${v09}\t${v10}\t${v11}\t${v12}\t${v13}\t${v14}\t${v15}"
@@ -161,22 +138,22 @@ prbReadInputBed() {
     ### Saving sequences to ./data/regions
     FASTA_HEADER=">ROI_${v03} pos=${v04}:${v01}-${v02}"
 
-    zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz \
+    zcat ${REGION_FILE%%.bed}.concat.fa.gz \
         | grep -v "^>" | awk -v FH="${FASTA_HEADER}" 'BEGIN{FS=OFS="\t"}{ print FH; print $0}' \
         > ${WORKDIR}/split/regions/${REGION_ID}/data/regions/roi_${v03}.fa
 
-      ROI_FASTA="${WORKDIR}/split/regions/${REGION_ID}/data/regions/roi_${v03}.fa"
-      OUTPUT_FOLDER="${WORKDIR}/split/regions/${REGION_ID}/data/candidates"
-      mkdir -p -m 770 ${OUTPUT_FOLDER}
+    ROI_FASTA="${WORKDIR}/split/regions/${REGION_ID}/data/regions/roi_${v03}.fa"
+    OUTPUT_FOLDER="${WORKDIR}/split/regions/${REGION_ID}/data/candidates"
+    mkdir -p -m 770 ${OUTPUT_FOLDER}
 
 
-      ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
-      ### Accessing singularity container to access the required prb-dependencies
-      CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
-      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
+    ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
+    ### Accessing singularity container to access the required prb-dependencies
+    CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
+    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+    prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
 
-      ${prb} python3 - <<-EOF
+    ${prb} python3 - <<-EOF
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
@@ -208,4 +185,4 @@ EOF
 }
 
 
-export -f prbReadInputGTF; echo -e "> prbReadInputGTF" 
+export -f prbReadInputBed; echo -e "> prbReadInputBed" 
