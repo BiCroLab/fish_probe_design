@@ -7,12 +7,14 @@ prbRun_nHUSH() {
 
      LENGTH=40      ### Default value, overwritten by setting another --length-oligos
      SUBLENGTH=21
+     FLAGMODE="DNA"
 
       while [[ "$#" -gt 0 ]]; do
           case "$1" in
               --cpu-per-job|-c) CPU_PER_JOB="${2:-$CPU_PER_JOB}"; shift ;;
               --length-oligos|-l) LENGTH="${2:-LENGTH}"; shift ;;
               --sub-length|-s) SUBLENGTH="${2:-SUBLENGTH}"; shift ;;
+              --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
               *) echo "Unknown option: $1" >&2; return 1 ;;
           esac
           shift
@@ -36,7 +38,7 @@ prbRun_nHUSH() {
       echo -e "Working Directory: \"$(pwd)\""
 
       ### -- Running prb functions: [get_oligos] and [run_nHUSH]
-      ${prb} run_nHUSH -d RNA -t ${CPU_PER_JOB} -L ${LENGTH} -l ${SUBLENGTH} -m 3 -i 14 -y
+      ${prb} run_nHUSH -d ${FLAGMODE} -t ${CPU_PER_JOB} -L ${LENGTH} -l ${SUBLENGTH} -m 3 -i 14 -y
 
 
 }

@@ -34,7 +34,9 @@ prbReferenceCreate() {
       | grep -v "chrKI" | grep -v "chrGL" > ${WORKDIR}/data/ref/chrs.list
 
      echo -e "Extracting reference genome.."
-     if [[ ! -f "${WORKDIR}/data/ref/genome.fa" ]]; then zcat ${GENOME} > "${WORKDIR}/data/ref/genome.fa"; fi
+     if [[ ! -f "${WORKDIR}/data/ref/genome.fa" ]]; then 
+      zcat ${GENOME} | awk '!/^>/ { print toupper($0) } /^>/ { print }' > "${WORKDIR}/data/ref/genome.fa"
+     fi
 
      ### Splitting FASTA into separate files
      module load samtools
@@ -46,11 +48,9 @@ prbReferenceCreate() {
      echo -e "Building blacklist - $(date)" ; CUTOFF=100
      cd ${WORKDIR} && mkdir -p -m 770 ${WORKDIR}/data/blacklist
      ### Running < prb generate_blacklist >
-     for GF in ${WORKDIR}/ref/genome*.fa; do
-         ${nHUSH} find-abundant --file "${GF}" --length "${LENGTH}" --threshold "${CUTOFF}" \
-          --out "${WORKDIR}/data/blacklist/$(basename ${GF}).abundant_L${LENGTH}_T${CUTOFF}.fa"
-         echo -e "Blacklist object created!"
-     done
+     ${nHUSH} find-abundant --file "${WORKDIR}/data/ref/genome.fa" --length "${LENGTH}" --threshold "${CUTOFF}" \
+      --out "${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T${CUTOFF}.fa"
+     echo -e "Blacklist object created!"
 
    else
      echo -e "Blacklist object already exists. Skipping."

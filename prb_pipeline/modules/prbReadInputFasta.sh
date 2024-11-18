@@ -12,21 +12,25 @@ prbReadInputFasta() {
     #### - will be used in the following prb function.
     #### -------------------------------------------------------- ####
 
+    FLAGMODE="DNA"
+
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --input-fasta|-i) INPUT_FASTA="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
+            --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
         shift
     done
 
 
-
-
-#  check if fasta is compressed and uncompress it
-
+    if [[ "${INPUT_FASTA}" == *.gz || "${INPUT_FASTA}" == *.gzip ]]; then
+     mkdir -p -m 770 ${WORKDIR}; zcat ${INPUT_FASTA} > "${WORKDIR}/${INPUT_FASTA}.tmp"
+    else 
+     mkdir -p -m 770 ${WORKDIR}; cat ${INPUT_FASTA} > "${WORKDIR}/${INPUT_FASTA}.tmp"
+    fi
 
     ### --------------- Step 1: Preparing FASTA sequences and initializing all sub-directories
     ### ---------------         Reading ${INPUT_FASTA} and saving one ${OUTPUT_FASTA} per header
@@ -42,7 +46,7 @@ prbReadInputFasta() {
              ### Saving FASTA sequence in ${OUTPUT_FASTA}
              echo "${LINE}" >> "${OUTPUT_TMP}"
          fi
-    done < "${INPUT_FASTA}"
+    done < "${WORKDIR}/${INPUT_FASTA}.tmp" && rm ${WORKDIR}/${INPUT_FASTA}.tmp
 
 
     for DIR in ${WORKDIR}/split/fasta/*; do 
@@ -92,7 +96,7 @@ prbReadInputFasta() {
        v12="+"                                   ## (h12) "Gene_strand"
        v13=${HEADER}                             ## (h13) "Gene_name"
        v14=${HEADER}                             ## (h14) "Gene_id"
-       v15="RNA"                                 ## (h15) "design_type"
+       v15=${FLAGMODE}                           ## (h15) "design_type"
        ### -------------------------------------------------------------------------
        values="${v01}\t${v02}\t${v03}\t${v04}\t${v05}\t${v06}\t${v07}\t${v08}\t${v09}\t${v10}\t${v11}\t${v12}\t${v13}\t${v14}\t${v15}"
 

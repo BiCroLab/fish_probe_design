@@ -74,7 +74,10 @@ slurmArrayLauncher \
  --cpu-per-job "${CPU_PER_JOB}" \
  --mem-per-job "${MEM_PER_JOB}" \
  --time-req "${TIME_PER_JOB}" \
- --work-dir ${WORKDIR}
+ --work-dir ${WORKDIR} \
+ --parallel-jobs 20 \
+ --slurm-array-max 800 \
+ --slurm-hpc-max 950
 
 
 
@@ -83,7 +86,7 @@ slurmBlocker --job-name "prbRun_nHUSH" -s 60
 
 
 ### Launching prbRun_cQuery
-CPU_PER_JOB=10 ; MEM_PER_JOB="40G" ; TIME_PER_JOB="10:00:00"
+CPU_PER_JOB=10 ; MEM_PER_JOB="40G" ; TIME_PER_JOB="24:00:00"
 
 slurmArrayLauncher \
  --command-name "prbRun_cQuery" \
@@ -91,6 +94,9 @@ slurmArrayLauncher \
  --cpu-per-job "${CPU_PER_JOB}" \
  --mem-per-job "${MEM_PER_JOB}" \
  --time-req "${TIME_PER_JOB}" \
- --work-dir ${WORKDIR}
+ --work-dir ${WORKDIR} \
+ --parallel-jobs 10 \
+ --slurm-array-max 800 \
+ --slurm-hpc-max 950
 
 

@@ -4,10 +4,10 @@
 slurmArrayLauncher() {
 
     ### -- Setting default values. Overwritten by user-defined variables.
-    MAX_RUNNING_JOBS=50 ; CPU_PER_JOB=5 ; MEM_PER_JOB="40G" ; RUN_TIME="24:00:00"
+    MAX_RUNNING_JOBS=15 ; CPU_PER_JOB=10 ; MEM_PER_JOB="40G" ; RUN_TIME="24:00:00"
     
-    ARRAY_MAX=400  ### Each SLURM Array will have a maximum of ${ARRAY_MAX} elements
-    HPC_MAX=800    ### No more than ${HPC_MAX} jobs can co-exist in the HPC (both running / pending).
+    ARRAY_MAX=800  ### Each SLURM Array will have a maximum of ${ARRAY_MAX} elements
+    HPC_MAX=950    ### No more than ${HPC_MAX} jobs can co-exist in the HPC (both running / pending).
 
 
     while [[ "$#" -gt 0 ]]; do

@@ -15,6 +15,7 @@ prbReadInputBed() {
     #### - Next, these outputs will be used in the following prb function.
     #### -------------------------------------------------------- ####
 
+    FLAGMODE="DNA"
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -23,6 +24,7 @@ prbReadInputBed() {
             --length-oligos|-l) LENGTH="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --zero-based-fix|-z) ZEROBASED="${2}"; shift ;;
+            --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
         shift
     done
@@ -33,8 +35,14 @@ prbReadInputBed() {
 
 
    echo -e "Reading input bed file.. " 
+
    ### Extracting chr, start, end and region id
-   zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { print $1, $2, $3, $1"_"$2"_"$3 }' | gzip > ${WORKDIR}/prb_bed.id.txt.gz
+   if [[ "${ANNOT_INPUT}" == *.gz || "${ANNOT_INPUT}" == *.gzip ]]; then
+    zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { print $1, $2, $3, $1"_"$2"_"$3 }' | gzip > ${WORKDIR}/prb_bed.id.txt.gz
+   else
+    cat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { print $1, $2, $3, $1"_"$2"_"$3 }' | gzip > ${WORKDIR}/prb_bed.id.txt.gz
+   fi
+
    echo -e "Saved ${WORKDIR}/prb_bed.id.txt.gz" 
 
 
@@ -128,7 +136,7 @@ prbReadInputBed() {
     v12="+"                                   ## (h12) "Gene_strand"
     v13=${REGION_ID}                          ## (h13) "Gene_name"
     v14=${REGION_ID}                          ## (h14) "Gene_id"
-    v15="RNA"                                 ## (h15) "design_type"
+    v15=${FLAGMODE}                           ## (h15) "design_type"
     ### -------------------------------------------------------------------------
     values="${v01}\t${v02}\t${v03}\t${v04}\t${v05}\t${v06}\t${v07}\t${v08}\t${v09}\t${v10}\t${v11}\t${v12}\t${v13}\t${v14}\t${v15}"
 

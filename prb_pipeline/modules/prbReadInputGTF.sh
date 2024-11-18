@@ -16,6 +16,7 @@ prbReadInputGTF() {
     #### -------------------------------------------------------- ####
 
     CCDS_FILTER="FALSE"
+    FLAGMODE="DNA"
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -24,6 +25,7 @@ prbReadInputGTF() {
             --ccds-only|-c) CCDS_FILTER="TRUE"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
+            --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
         shift
     done
@@ -34,19 +36,35 @@ prbReadInputGTF() {
 
 
    echo -e "Reading input gtf file.. " 
+
    ### Extract gene_id, gene_name and transcript_id values from GTF
-   zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
-     for(i in X) { if(X[i] ~ /gene_id/) {
-        for(k in X) { if(X[k] ~ /gene_name/) {
-          for(j in X) { if(X[j] ~ /transcript_id/) {
-               gsub("gene_id", "", X[i]);
-               gsub("gene_name", "", X[k]);
-               gsub("transcript_id", "", X[j]);
-               gsub("\"", "", X[i]);
-               gsub("\"", "", X[k]);
-               gsub("\"", "", X[j]); 
-               print X[j], X[i], X[k] ; break; }}}}}}}' \
-   | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
+   if [[ "${ANNOT_INPUT}" == *.gz || "${ANNOT_INPUT}" == *.gzip ]]; then
+    zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
+      for(i in X) { if(X[i] ~ /gene_id/) {
+         for(k in X) { if(X[k] ~ /gene_name/) {
+           for(j in X) { if(X[j] ~ /transcript_id/) {
+                gsub("gene_id", "", X[i]);
+                gsub("gene_name", "", X[k]);
+                gsub("transcript_id", "", X[j]);
+                gsub("\"", "", X[i]);
+                gsub("\"", "", X[k]);
+                gsub("\"", "", X[j]); 
+                print X[j], X[i], X[k] ; break; }}}}}}}' \
+    | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
+   else
+    cat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
+      for(i in X) { if(X[i] ~ /gene_id/) {
+         for(k in X) { if(X[k] ~ /gene_name/) {
+           for(j in X) { if(X[j] ~ /transcript_id/) {
+                gsub("gene_id", "", X[i]);
+                gsub("gene_name", "", X[k]);
+                gsub("transcript_id", "", X[j]);
+                gsub("\"", "", X[i]);
+                gsub("\"", "", X[k]);
+                gsub("\"", "", X[j]); 
+                print X[j], X[i], X[k] ; break; }}}}}}}' \
+    | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
+   fi
 
    echo -e "Saved ${WORKDIR}/prb_gtf.id.txt.gz" 
 
@@ -208,7 +226,7 @@ prbReadInputGTF() {
     v12=${STRANDNESS}                         ## (h12) "Gene_strand"
     v13=${GENE_NAME}                          ## (h13) "Gene_name"
     v14=${TRANSCRIPT_ID}                      ## (h14) "Gene_id"
-    v15="RNA"                                 ## (h15) "design_type"
+    v15=${FLAGMODE}                           ## (h15) "design_type"
     ### -------------------------------------------------------------------------
     values="${v01}\t${v02}\t${v03}\t${v04}\t${v05}\t${v06}\t${v07}\t${v08}\t${v09}\t${v10}\t${v11}\t${v12}\t${v13}\t${v14}\t${v15}"
 

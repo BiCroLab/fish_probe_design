@@ -5,12 +5,14 @@ prbRun_cQuery() {
 
       LENGTH=40 ### Default value, overwritten by setting another --length-oligos
       SUBLENGTH=21
+      FLAGMODE="DNA"
 
       while [[ "$#" -gt 0 ]]; do
           case "$1" in
               --cpu-per-job|-c) CPU_PER_JOB="${2:-$CPU_PER_JOB}"; shift ;;
               --length-oligos|-l) LENGTH="${2:-LENGTH}"; shift ;;
               --sub-length|-s) SUBLENGTH="${2:-SUBLENGTH}"; shift ;;
+              --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
               *) echo "Unknown option: $1" >&2; return 1 ;;
           esac
           shift
@@ -44,10 +46,10 @@ prbRun_cQuery() {
       ### -- Running prb functions
 
       ## Quite quick. Add header description to this step?
-      ${prb} reform_hush_combined RNA ${LENGTH} ${SUBLENGTH} 3  
+      ${prb} reform_hush_combined ${FLAGMODE} ${LENGTH} ${SUBLENGTH} 3  
 
       ## Quite quick. Add header description to this step?
-      ${prb} melt_secs_parallel RNA
+      ${prb} melt_secs_parallel ${FLAGMODE}
 
       ## Quite quick. Add header description to this step?
       ${prb} build-db_BL -f q_bl -m 32 -i 6 -L ${LENGTH} -c 100 -d 8 -T 72 -y
@@ -55,7 +57,7 @@ prbRun_cQuery() {
 
       ### Launching Cycling Query:
       echo -e "$(date) <---- starting"  
-      ${prb} cycling_query -s RNA -L ${LENGTH} -m 8 -c 100 -t ${CPU_PER_JOB} -g 2500 -stepdown ${STEPDOWN} -greedy
+      ${prb} cycling_query -s ${FLAGMODE} -L ${LENGTH} -m 8 -c 100 -t ${CPU_PER_JOB} -g 2500 -stepdown ${STEPDOWN} -greedy
 
       ### Clearing large temporary files. This part should be fixed, as it is still problematic.
       rm ${WORKDIR}/data/ref/genome.fa.aD 
