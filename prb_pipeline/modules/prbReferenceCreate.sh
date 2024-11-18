@@ -45,12 +45,31 @@ prbReferenceCreate() {
       samtools faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
      done
 
-     echo -e "Building blacklist - $(date)" ; CUTOFF=100
-     cd ${WORKDIR} && mkdir -p -m 770 ${WORKDIR}/data/blacklist
+
+     echo -e "Building blacklist - $(date)"
+
+     LOGS="${WORKDIR}/logs/prbBlacklist" && mkdir -p -m 770 ${LOGS}
+     CPU=5; export WORKDIR=${WORKDIR} ; export nHUSH=${nHUSH}; export CPU=${CPU}; export LENGTH=${LENGTH}
      ### Running < prb generate_blacklist >
-     ${nHUSH} find-abundant --file "${WORKDIR}/data/ref/genome.fa" --length "${LENGTH}" --threshold "${CUTOFF}" \
-      --out "${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T${CUTOFF}.fa"
+     sbatch \
+       --nodes 1 \
+       --ntasks "${CPU}" \
+       --mem="25G" \
+       --time="00:50:00" \
+       --job-name "prbBlacklist" \
+       --export=ALL \
+       -e "${LOGS}/slurm-%x_%A_%a.txt" \
+       -o "${LOGS}/slurm-%x_%A_%a.txt" \
+       --wrap="
+       cd ${WORKDIR} && mkdir -p -m 770 ${WORKDIR}/data/blacklist
+       ${nHUSH} find-abundant --file ${WORKDIR}/data/ref/genome.fa --length ${LENGTH} --threshold 100 \
+        --out ${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T100.fa
+              "
+
+     ### Holding execution to let the process finish
+     slurmBlocker --job-name "prbBlacklist" -s 5
      echo -e "Blacklist object created!"
+
 
    else
      echo -e "Blacklist object already exists. Skipping."
