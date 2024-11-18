@@ -32,9 +32,6 @@ slurmArrayLauncher() {
     SPLIT_FOLDERS=$( ls ${WORKDIR}/split/*/ ) # Test if this works anyway. Probably yes.
     SPLIT_FOLDERS=$( find ${WORKDIR}/split -mindepth 2 -maxdepth 2 -type d)
 
-
-    LOGS="${WORKDIR}/logs/$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
-
     ### Creating a file storing the total number of input entries.
     ### Then, splitting it into sub-files, each having a ${HPC_MAX} number of rows.
     mkdir -p -m 770 ${WORKDIR}/slurm.tmp/ && cd ${WORKDIR}/slurm.tmp/
@@ -72,6 +69,8 @@ slurmArrayLauncher() {
            sleep 10; 
           fi
         done
+
+        LOGS="${WORKDIR}/logs/${GROUP}_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
 
         ### Submit the current array job
         sbatch \
