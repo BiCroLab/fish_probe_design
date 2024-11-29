@@ -54,7 +54,7 @@ prbReferenceCreate() {
      sbatch \
        --nodes 1 \
        --ntasks "${CPU}" \
-       --mem="25G" \
+       --mem="42G" \
        --time="00:50:00" \
        --job-name "prbBlacklist" \
        --export=ALL \
@@ -97,7 +97,7 @@ prbReferenceCreate() {
      sbatch \
       --nodes 1 \
       --ntasks "${CPU}" \
-      --mem="40G" \
+      --mem="42G" \
       --time="00:50:00" \
       --job-name "prbReferenceHush" \
       --export=ALL \
