@@ -6,7 +6,8 @@
 
 ### Importing Pipeline Modules
 #modules connected to https://github.com/salvzzz/prb_parallel/tree/main
-PIPELINE_MODS="/group/bienko/projects/RNAFISH/Scripts_PRB_git/prb_parallel/pipeline_transcriptid/modules"
+#PIPELINE_MODS="/group/bienko/projects/RNAFISH/Scripts_PRB_git/prb_parallel/pipeline_transcriptid/modules"
+PIPELINE_MODS="/scratch/raquel.andre/PROBES/prb_parallel/prb_pipeline/modules/"
 
 echo -e "Importing Pipeline Modules:" && for MOD in ${PIPELINE_MODS}/*.sh; do source ${MOD}; done
 
@@ -14,8 +15,8 @@ echo -e "Importing Pipeline Modules:" && for MOD in ${PIPELINE_MODS}/*.sh; do so
 ### Input Objects: 
 
 GENOME="/group/bienko/annotations/human/hg38_GRCh38_p13/genome/Homo_sapiens.GRCh38.103.fa.gz"
-INPUT_GTF="/group/bienko/annotations/human/hg38_GRCh38_p13/annotations/gencode/v43/gencode.v43.primary_assembly.basic.annotation.gtf.gz" 
-WORKDIR="/group/bienko/projects/RNAFISH/test_tmp/"
+INPUT_GTF="/group/bienko/projects/RNAFISH/Output_FunkGlist/Output_TX_ID_20241128/gencode.v43_annotation_filtered.gtf.gz" 
+WORKDIR="/group/bienko/projects/RNAFISH/Output_FunkGlist/Output_TX_ID_20241128"
 
 OLIGO_LENGTH=40
 OLIGO_SUBLENGTH=21
