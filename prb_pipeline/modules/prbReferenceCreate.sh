@@ -15,7 +15,7 @@ prbReferenceCreate() {
    ### Checking if ${BLACKLIST_OUT} exists. Skip the block if it already exists.
    BLACKLIST_OUT="${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T100.fa"
 
-   if [[ ! -f "${BLACKLIST_OUT}" ]]; then
+   if [[ ! -f "${BLACKLIST_OUT}" || ! -s "${BLACKLIST_OUT}" ]]; then 
      echo -e "Generating References and Blacklist - $(date)"; 
 
      ### -- Accessing singularity container  
