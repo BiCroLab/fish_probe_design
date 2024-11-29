@@ -70,7 +70,7 @@ slurmArrayLauncher() {
           fi
         done
 
-        LOGS="${WORKDIR}/logs/${GROUP}_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
+        LOGS="${WORKDIR}/logs/$(basename ${GROUP})_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
 
         ### Submit the current array job
         sbatch \
