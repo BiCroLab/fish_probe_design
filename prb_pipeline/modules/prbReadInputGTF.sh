@@ -17,6 +17,8 @@ prbReadInputGTF() {
 
     CCDS_FILTER="FALSE"
     FLAGMODE="DNA"
+    SPACER_FACTOR=10
+
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -24,6 +26,7 @@ prbReadInputGTF() {
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --ccds-only|-c) CCDS_FILTER="TRUE"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
+            --oligo-spacing-factor|-s) SPACER_FACTOR="${2}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
@@ -207,7 +210,7 @@ prbReadInputGTF() {
     ### Calculating transcript length to assign < Window_start > and < Window_end >
     WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
     ### Setting MAX number of oligos to be searched for the current elements according to its length
-    MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} '{ M=W/(L+10);printf "%.f\n",int(M+0.5)}')
+    MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} -v S=${SPACER_FACTOR} '{ M=W/(L+S);printf "%.f\n",int(M+0.5)}')
 
 
     ### Assigning values for each input transcript isoform to < all_regions.tsv >
