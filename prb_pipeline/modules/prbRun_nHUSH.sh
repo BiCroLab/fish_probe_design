@@ -39,7 +39,8 @@ prbRun_nHUSH() {
 
       ### -- Running prb functions: [get_oligos] and [run_nHUSH]
       ${prb} run_nHUSH -d ${FLAGMODE} -t ${CPU_PER_JOB} -L ${LENGTH} -l ${SUBLENGTH} -m 3 -i 14 -y
-
+      ### -- Temporary BugFix (04Dec2024)    
+      for FA in ${WORKDIR}/data/candidates/*fa; do sed -i 's/ pos=pos=/ pos=/g; s/:-1--1//g' ${FA}; done
 
 }
 
