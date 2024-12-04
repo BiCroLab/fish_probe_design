@@ -75,7 +75,7 @@ slurmArrayLauncher() {
         ### Submit the current array job
         sbatch \
          --nodes 1 \
-         --ntasks "${CPU_PER_JOB}" \
+         --cpus-per-task "${CPU_PER_JOB}" \
          --mem="${MEM_PER_JOB}" \
          --time="${RUN_TIME}" \
          --job-name "${COMMAND}" \
