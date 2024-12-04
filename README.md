@@ -32,7 +32,9 @@ The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script
 - `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
-- `${SPACER}` value affecting average oligo density (default is 10bp).
+- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br>
+- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACER} )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
+
 
 <br>
 
