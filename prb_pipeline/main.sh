@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=prb_main --partition=cpuq --time=99:00:00
+#SBATCH --job-name=prb_main --partition=cpuq --time=240:00:00
 #SBATCH --nodes=1 --ntasks-per-node=1 --mem=4G
 
 
