@@ -13,6 +13,7 @@ prbReadInputFasta() {
     #### -------------------------------------------------------- ####
 
     FLAGMODE="DNA"
+    SPACER_FACTOR=10
 
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -20,6 +21,7 @@ prbReadInputFasta() {
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
+            --oligo-spacing-factor|-s) SPACER_FACTOR="${2}"; shift ;;
             --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
         shift
@@ -78,8 +80,8 @@ prbReadInputFasta() {
 
        ### Calculating transcript length to assign < Window_start > and < Window_end >
        ### Setting MAX number of oligos to be searched for the current elements according to its length
-       MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} '{ M=W/(L+10);printf "%.f\n",int(M+0.5)}')
-    
+       MAX_OLIGOS=$(echo | awk -v W=${WIDTH_ISOFORM} -v L=${LENGTH} -v S=${SPACER_FACTOR} '{ M=W/(L+S);printf "%.f\n",int(M+0.5)}')
+
        ### Assigning values for each input transcript isoform to < all_regions.tsv >
        ### -------------------------------------------------------------------------
        v01="1"                                   ## (h01) "Window_start"
