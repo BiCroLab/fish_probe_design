@@ -32,14 +32,15 @@ The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script
 - `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
+- `${SPACER}` value affecting average oligo density (default is 10bp).
 
 <br>
 
  | Module | Input | Arguments |
  | -------- | ----------- | ----------- | 
- | prbReadInputGTF |  `-i ${GTF}`  | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH}` |
- | prbReadInputBed | `-i ${BED}` |  `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH}` |
- | prbReadInputFasta | `-i ${FASTA}` | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH}` |
+ | prbReadInputGTF |  `-i ${GTF}`  | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
+ | prbReadInputBed | `-i ${BED}` |  `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
+ | prbReadInputFasta | `-i ${FASTA}` | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
  | <br> | |
  | prbReferenceCreate | | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}` |
  | <br> | |
