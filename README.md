@@ -19,11 +19,9 @@ The **BED-based workflow** can be used to test entire ungapped regions based on 
 ---- 
 
 
-#### Inputs / Parameters Tuning
+## Inputs / Parameters Tuning
 
-The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script that manages a series of *modules*. Input variables are explained below and should be manually adjusted by users according to their needs. The whole workflow can be launched using:
-         
-    sbatch main.sh
+The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules*. 
 
 <br>
 
@@ -32,8 +30,9 @@ The pipeline consists of a [`main.sh`](./pipeline_geneid/modules/main.sh) script
 - `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
-- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br>
+- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br><br>
 - For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACER} )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
+- For example: `5000bp region` / (`40bp oligos` + `10bp spacing`) would yield up to 100 oligos.
 
 
 <br>
@@ -81,13 +80,34 @@ In short, `--parallel-jobs`, `--slurm-array-max`, `--slurm-hpc-max` can be used 
 
 <br><br><br>
 
+## Usage:
 
-#### Usage:
+1. Either download or clone the entire github repository
+2. Define user-specific variables in `main.sh`
+3. Launch the whole pipeline ➤ ```sbatch main.sh```<br>
 
+<br><br>
 
-         
+## Outputs:
 
-#### Outputs:
+For every input, one `final_probes` directory can be located as depicted below:
+
+`${WORKDIR}`    
+┣╍╍╍╍  data       
+┃   ┣╍╍╍╍ blacklist       
+┃   ┣╍╍╍╍ ref   
+┣╍╍╍╍ split       
+┃   ┃   ┣╍╍╍╍ `gene` / `regions` / `fasta`         
+┃   ┃   ┃   ┣╍╍╍╍ ***input1***         
+┃   ┃   ┃   ┃   ┣╍╍╍╍ data         
+┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `final_probes`         
+┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `regions`         
+┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `rois`     
+┃   ┃   ┃   ┣╍╍╍╍ ***input2***         
+┃   ┃   ┃   ┣╍╍╍╍ ***input3***          
+┃   ┃   ┃   ┣╍╍╍╍ etc...     
+
+In `final_probes`, .... work in progress blabla
 
 
 <br>
@@ -96,7 +116,7 @@ In short, `--parallel-jobs`, `--slurm-array-max`, `--slurm-hpc-max` can be used 
 <br>
 
 
-#### Installation:
+## Installation:
 
 Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
 (((<ins>work in progress</ins>))) To recreate it, see: [prb_docker](./prb_docker)
@@ -105,17 +125,18 @@ Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
 
 #### Required Resources / Speed :
 
+Some steps consume around **40GB RAM** when using human genome assemblies, but this value might be lower when using smaller genomes. There are few potential bottlenecks when running [`prbRun_nHUSH`](./prb_pipeline/modules/prbRun_nHUSH.sh) and [`prbRun_cQuery`](./prb_pipeline/modules/prbRun_cQuery.sh). Overall, 
+
+- [`main`](./prb_pipeline/main.sh) runtime might require tuning when supplying many inputs.
+- [`prbReadInput`](./prb_pipeline/modules/prbReadInputGTF.sh) functions should be quick, unless several inputs are provided.
+- [`prbReferenceCreate.sh`](./prb_pipeline/modules/prbReferenceCreate.sh) ~ 1-2 hours with 10 CPU / 40GB (only once).
+- [`prbRun_nHUSH`](./prb_pipeline/modules/prbRun_nHUSH.sh) ~ 1-2 hours with 10 CPU / 40GB (for each input).
+- [`prbRun_cQuery`](./prb_pipeline/modules/prbRun_cQuery.sh) ~ 1-8 hours with 10 CPU / 40GB (for each input).
 
 
-Few potential bottlenecks when running the [`nHUSH`](./pipeline_geneid/modules/txt) and [`cycling query`](./pipeline_geneid/modules/txt) steps. For each input isoform: 
-
-- [`nHUSH`](./pipeline_geneid/modules/txt) ~1-2 hours with 5CPU / 35-40GB memory
-- [`cycling query`](./pipeline_geneid/modules/txt) ~ ??? hours with ? CPU / ?-? GB memory (((<ins>work in progress</ins>))) 
-
-All tests are related to the hg38 genome reference. Smaller genomes may result in lower memory usage and runtime.
 
 
-
+<br><br><br>
 
 blabla: other notes to be moved later on:
 Since many transcript isoforms differ for relatively short sequences, we advise against using the resulting oligos to selectively target a specific isoform. Instead, pooling together results obtained from all isoforms of the same gene would allow to target any possibly expressed transcript of the gene of interest.
