@@ -26,9 +26,9 @@ prbReadInputGTF() {
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --ccds-only|-c) CCDS_FILTER="TRUE"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
-            --oligo-spacing-factor|-s) SPACER_FACTOR="${2}"; shift ;;
+            --oligo-spacing-factor|-s) SPACER_FACTOR="${2:-$SPACER_FACTOR}"; shift ;;
+            --flag-mode|-f) FLAGMODE="${2:-$FLAGMODE}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
-            --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
         esac
         shift
     done
@@ -241,6 +241,7 @@ prbReadInputGTF() {
 
     zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz \
         | grep -v "^>" | awk -v FH="${FASTA_HEADER}" 'BEGIN{FS=OFS="\t"}{ print FH; print $0}' \
+        | awk '{ if ($0 ~ /^>/) { print $0; next; } ; print toupper($0); }' \
         > ${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/data/regions/roi_${v03}.fa
 
       ROI_FASTA="${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/data/regions/roi_${v03}.fa"
