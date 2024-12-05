@@ -16,7 +16,7 @@ echo -e "Importing Pipeline Modules:" && for MOD in ${PIPELINE_MODS}/*.sh; do so
 
 GENOME="/group/bienko/annotations/human/hg38_GRCh38_p13/genome/Homo_sapiens.GRCh38.103.fa.gz"
 INPUT_GTF="/group/bienko/projects/RNAFISH/Output_FunkGlist/Output_TX_ID_20241128/gencode.v43_annotation_filtered.gtf.gz" 
-WORKDIR="/group/bienko/projects/RNAFISH/Output_FunkGlist/Output_TX_ID_20241128"
+WORKDIR="/group/bienko/projects/RNAFISH/Output_FunkGlist/Output_TX_ID_20241128" && mkdir -p ${WORKDIR}
 
 OLIGO_LENGTH=40
 OLIGO_SUBLENGTH=21
