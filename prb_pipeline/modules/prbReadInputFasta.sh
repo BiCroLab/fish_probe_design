@@ -111,6 +111,7 @@ prbReadInputFasta() {
 
        zcat ${OUTPUT_FASTA} \
         | grep -v "^>" | awk -v FH="${FASTA_HEADER}" 'BEGIN{FS=OFS="\t"}{ print FH; print $0}' \
+        | awk '{ if ($0 ~ /^>/) { print $0; next; } ; print toupper($0); }' \
         > ${OUTPUT_DIREC}/data/regions/roi_${v03}.fa
 
         ROI_FASTA="${OUTPUT_DIREC}/data/regions/roi_${v03}.fa"
