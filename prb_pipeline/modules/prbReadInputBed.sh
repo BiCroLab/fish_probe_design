@@ -149,6 +149,7 @@ prbReadInputBed() {
 
     zcat ${REGION_FILE%%.bed}.concat.fa.gz \
         | grep -v "^>" | awk -v FH="${FASTA_HEADER}" 'BEGIN{FS=OFS="\t"}{ print FH; print $0}' \
+        | awk '{ if ($0 ~ /^>/) { print $0; next; } ; print toupper($0); }' \
         > ${WORKDIR}/split/regions/${REGION_ID}/data/regions/roi_${v03}.fa
 
     ROI_FASTA="${WORKDIR}/split/regions/${REGION_ID}/data/regions/roi_${v03}.fa"
