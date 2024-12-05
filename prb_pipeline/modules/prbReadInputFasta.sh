@@ -21,8 +21,8 @@ prbReadInputFasta() {
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
-            --oligo-spacing-factor|-s) SPACER_FACTOR="${2}"; shift ;;
-            --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
+            --oligo-spacing-factor|-s) SPACER_FACTOR="${2:-$SPACER_FACTOR}"; shift ;;
+            --flag-mode|-f) FLAGMODE="${2:-$FLAGMODE}"; shift ;;
         esac
         shift
     done
