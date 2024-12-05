@@ -279,6 +279,8 @@ def main(fasta_file, output_folder, kmer_length, gcfilter):
 main("${ROI_FASTA}", "${OUTPUT_FOLDER}", ${LENGTH}, True)
 EOF
 
+rm "${OUTPUT_FOLDER}/roi_${v03}_Reference.fa"
+
   done
 
   echo -e " ✓"
