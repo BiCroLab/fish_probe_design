@@ -275,6 +275,13 @@ def main(fasta_file, output_folder, kmer_length, gcfilter):
             # Call the extract function
             extract(fasta_file, output_folder, kmer_length, gcfilter)
 
+            # todo? suppress output logging
+            # from contextlib import redirect_stdout, redirect_stderr
+            # with open(os.devnull, 'w') as devnull:
+            #     with redirect_stdout(devnull), redirect_stderr(devnull):
+            #        extract(fasta_file, output_folder, kmer_length, gcfilter)
+
+
 # Pass parameters directly to main
 main("${ROI_FASTA}", "${OUTPUT_FOLDER}", ${LENGTH}, True)
 EOF
