@@ -39,9 +39,9 @@ prbReferenceCreate() {
      fi
 
      ### Splitting FASTA into separate files
-     module load samtools
+     module load --silent samtools
      for CHR in $(cat ${WORKDIR}/data/ref/chrs.list); do
-      echo -e "Splitting ${REF} > ${CHR}"
+      ### echo -e "Splitting ${REF} > ${CHR}"
       samtools faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
      done
 
