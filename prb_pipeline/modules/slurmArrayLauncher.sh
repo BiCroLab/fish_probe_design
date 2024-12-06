@@ -51,16 +51,15 @@ slurmArrayLauncher() {
     
         ### Passing ${GROUP} full path to each slurm array script
         GROUP="${WORKDIR}/slurm.tmp/${GROUP}" ; export GROUP=${GROUP}
-
         ### Total number of jobs in current array:
         TOTAL_JOBS_COUNT=$(cat ${GROUP} | wc -l ); ((ARRAY_COUNTER++))
         ### 
-        echo -e "Processing Array #${ARRAY_COUNTER} - $(basename ${GROUP}) - (${TOTAL_JOBS_COUNT})"
-    
         ### -------------------------------------------------------------------------------
         ### Slurm does not allow an infinite number of jobs to exist in the HPC queue.
         ### To prevent issues, only a maximum of ${HPC_MAX} of jobs will be submitted at the same time.
-        ### If ${HPC_CURRENT} + ${ARRAY_MAX} exceeds the maximum number of allowed jobs: stalling.
+        ### If ${HPC_CURRENT} + ${ARRAY_MAX} exceeds the maximum number of allowed jobs: stalling
+        SLEEP_COUNTER=0
+        
         while true; do
           HPC_CURRENT=$(squeue -A ${USER} --array -h --name "${COMMAND}" -o "%.20u %.30j" | wc -l)
           ### This allows to start a new array, as long as the total jobs count does not exceed ${HPC_MAX}
@@ -71,6 +70,8 @@ slurmArrayLauncher() {
         done
 
         LOGS="${WORKDIR}/logs/$(basename ${GROUP})_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
+        echo -e "Processing Array #${ARRAY_COUNTER} - $(basename ${GROUP}) - (${TOTAL_JOBS_COUNT})"
+
 
         ### Submit the current array job
         sbatch \
@@ -94,16 +95,16 @@ slurmArrayLauncher() {
 export -f slurmArrayLauncher; echo -e "> slurmArrayLauncher"
 
 
-    ### Usage Example:
+### Usage Example:
 
-            # slurmArrayLauncher \
-            #  --work-dir ${WORKDIR}                                                  \
-            #  --command-name prbRun_nHUSH                                            \
-            #  --command-args "--work-dir ${WORKDIR} --cpu-per-job ${CPU_PER_JOB}"    \
-            #  --parallel-jobs 30                                                     \
-            #  --cpu-per-job 10                                                       \
-            #  --mem-per-job "40G"                                                    \
-            #  --time-req "10:00:00"
+ # slurmArrayLauncher \
+ #  --work-dir ${WORKDIR}                                                  \
+ #  --command-name prbRun_nHUSH                                            \
+ #  --command-args "--work-dir ${WORKDIR} --cpu-per-job ${CPU_PER_JOB}"    \
+ #  --parallel-jobs 30                                                     \
+ #  --cpu-per-job 10                                                       \
+ #  --mem-per-job "40G"                                                    \
+ #  --time-req "10:00:00"
 
 
 
