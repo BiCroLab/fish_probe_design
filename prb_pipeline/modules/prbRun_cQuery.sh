@@ -27,7 +27,7 @@ prbRun_cQuery() {
 
       ### Calculating minimum ${STEPDOWN} value for the current ${GENE_ID}
       ### By default, it will correspond to 5% of ${MIN_WIDTH}    
-      MIN_WIDTH=$(cat ${WORKDIR}/data/rois/all.regions.tsv | cut -f 7 | tail -n+2 | sort -k1,1n | uniq | head -n1)
+      MIN_WIDTH=$(cat ${WORKDIR}/data/rois/all_regions.tsv | cut -f 7 | tail -n+2 | sort -k1,1n | uniq | head -n1)
       STPERC=5 
       STEPDOWN=$( echo | awk -v W=${MIN_WIDTH} -v P=${STPERC} '{ M=W/100*P; printf "%.f\n",int(M+0.5)}')
 
