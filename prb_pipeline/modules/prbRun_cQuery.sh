@@ -26,10 +26,11 @@ prbRun_cQuery() {
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
 
       ### Calculating minimum ${STEPDOWN} value for the current ${GENE_ID}
-      ### By default, it will correspond to 5% of ${MIN_WIDTH}    
-      MIN_WIDTH=$(cat ${WORKDIR}/data/rois/all_regions.tsv | cut -f 7 | tail -n+2 | sort -k1,1n | uniq | head -n1)
-      STPERC=5 
-      STEPDOWN=$( echo | awk -v W=${MIN_WIDTH} -v P=${STPERC} '{ M=W/100*P; printf "%.f\n",int(M+0.5)}')
+      ### By default, it will correspond to 5% of ${MAX_OLIGOS}    
+      MAX_OLIGOS=$(cat ${WORKDIR}/data/rois/all_regions.tsv | cut -f 7 | tail -n+2 | sort -k1,1n | uniq | head -n1)
+      STPERC=10
+      STEPDOWN=$( echo | awk -v W=${MAX_OLIGOS} -v P=${STPERC} '{ M=W/100*P; printf "%.f\n",int(M+0.5)}')
+      echo -e "Looking for ${MAX_OLIGOS} with --stepdown: ${STEPDOWN}"
 
 
       ### -- Accessing singularity container  
