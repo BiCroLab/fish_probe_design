@@ -69,7 +69,7 @@ slurmArrayLauncher() {
           fi
         done
 
-        LOGS="${WORKDIR}/logs/$(basename ${GROUP})_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
+        LOGS="${WORKDIR}/logs/${COMMAND}/$(basename ${GROUP})_$(date +%d%h.%H%M)" && mkdir -p -m 770 ${LOGS}
         echo -e "Processing Array #${ARRAY_COUNTER} - $(basename ${GROUP}) - (${TOTAL_JOBS_COUNT})"
 
 
