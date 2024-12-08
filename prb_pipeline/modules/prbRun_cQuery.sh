@@ -44,6 +44,12 @@ prbRun_cQuery() {
       echo -e "Working Directory: \"$(pwd)\""
 
 
+      if [[ -z $(ls ${WORKDIR}/data/candidates/*.uint8 2>/dev/null) ]]; then 
+       touch ${WORKDIR}/error.log && echo -e "Missing Files: check \"data/candidates/\"" > ${WORKDIR}/error.log
+       echo "Necessary files are missing! Check if nHUSH has run correctly"; exit 1;
+      fi
+
+
       ### -- Running prb functions
 
       ## Quite quick. Add header description to this step?
