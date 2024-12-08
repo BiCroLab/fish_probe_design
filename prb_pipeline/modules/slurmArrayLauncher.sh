@@ -86,6 +86,8 @@ slurmArrayLauncher() {
          -o "${LOGS}/slurm-%x_%A_%a.txt" \
          --wrap="${COMMAND} ${COMMAND_ARGS}"
 
+        sleep 15
+
     done
 
 
