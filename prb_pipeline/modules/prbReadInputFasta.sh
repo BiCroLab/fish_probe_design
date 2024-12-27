@@ -61,7 +61,7 @@ prbReadInputFasta() {
         ### Compressing output and removing temporary files
         cat "${OUTPUT_TMP}" | gzip > "${OUTPUT_FASTA}" && rm "${OUTPUT_TMP}"
         WIDTH_ISOFORM=$(zcat ${OUTPUT_FASTA} | grep -v "^>" | wc -c)
-        echo -e " >>> ${HEADER}\t(+)\t${WIDTH_ISOFORM}bp"
+        ### echo -e " >>> ${HEADER}\t(+)\t${WIDTH_ISOFORM}bp"
 
 
     ### --------------- Step 2: Generating data/rois and data/region
@@ -125,7 +125,7 @@ prbReadInputFasta() {
         WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
         prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
 
-        ${prb} python3 - <<-EOF
+        ${prb} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
