@@ -38,7 +38,7 @@ prbReadInputGTF() {
    module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
 
 
-   echo -e "Reading input gtf file.. " 
+   echo -e "prbReadInputGTF - reading input: $(date)" 
 
    ### Extract gene_id, gene_name and transcript_id values from GTF
    if [[ "${ANNOT_INPUT}" == *.gz || "${ANNOT_INPUT}" == *.gzip ]]; then
