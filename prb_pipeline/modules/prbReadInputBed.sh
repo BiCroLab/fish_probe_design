@@ -59,7 +59,7 @@ prbReadInputBed() {
     mkdir -p -m 770 ${WORKDIR}/split/regions/${REGION_ID}/
     echo -e "${REGION_CHR}\t${REGION_START}\t${REGION_END}\t${REGION_ID}\t.\t+" > ${REGION_FILE}
     
-    echo -e "## ${REGION_ID}"; echo -e "--- $(date)"
+    ### echo -e "## ${REGION_ID}"; echo -e "--- $(date)"
 
 
 
@@ -91,12 +91,6 @@ prbReadInputBed() {
     ### Printing final width before exiting
     WIDTH_ISOFORM=$(zcat ${REGION_FILE%%.bed}.concat.fa.gz | grep -v "^>" | wc -c)
     MISSING_NTS=$(zcat "${REGION_FILE%%.bed}.concat.fa.gz" | grep -v "^>" | grep -o '[nN]' | wc -l)
-
-
-    echo -e " >>> ${REGION_ID}\t(+)\t${WIDTH_ISOFORM}bp"
-    # echo -e " >>> N nucleotides: ${MISSING_NTS}"
-
-
 
 
     ### ----------------------------------------------------------------------
@@ -163,7 +157,7 @@ prbReadInputBed() {
     WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
     prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
 
-    ${prb} python3 - <<-EOF
+    ${prb} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
