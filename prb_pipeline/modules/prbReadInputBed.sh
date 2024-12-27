@@ -44,7 +44,7 @@ prbReadInputBed() {
     cat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { print $1, $2, $3, $1"_"$2"_"$3 }' | gzip > ${WORKDIR}/prb_bed.id.txt.gz
    fi
 
-   echo -e "Saved ${WORKDIR}/prb_bed.id.txt.gz" 
+   ### echo -e "Saved ${WORKDIR}/prb_bed.id.txt.gz" 
 
 
    zcat ${WORKDIR}/prb_bed.id.txt.gz | while read -r INPUT_ID; do
