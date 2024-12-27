@@ -35,7 +35,7 @@ prbReadInputBed() {
    module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
 
 
-   echo -e "Reading input bed file.. " 
+   echo -e "prbReadInputBed - reading input: $(date)" 
 
    ### Extracting chr, start, end and region id
    if [[ "${ANNOT_INPUT}" == *.gz || "${ANNOT_INPUT}" == *.gzip ]]; then
