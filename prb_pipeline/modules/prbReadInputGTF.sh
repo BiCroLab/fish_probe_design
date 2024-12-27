@@ -79,7 +79,7 @@ prbReadInputGTF() {
     GENE_ID=$(echo ${INPUT_ID} | awk '{print $2}')
     GENE_NAME=$(echo ${INPUT_ID} | awk '{print $3}')
     
-    echo -e "## ${GENE_NAME}\n## ${GENE_ID}\n## ${TRANSCRIPT_ID}"; echo -e "--- $(date)"
+    ### echo -e "## ${GENE_NAME}\n## ${GENE_ID}\n## ${TRANSCRIPT_ID}"; echo -e "--- $(date)"
 
     ANNOT_FILTERED="${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/${TRANSCRIPT_ID}.annot.tsv.gz"
     ANNOT_FILTERED_TMP="${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/${TRANSCRIPT_ID}.annot.tmp"
@@ -182,7 +182,7 @@ prbReadInputGTF() {
 
     ### 8. Printing final width before exiting
     WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
-    echo -e " >>> ${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}bp"
+    echo -e "${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}" >> ${WORKDIR}/prb_width_stats.txt
 
 
 
@@ -255,7 +255,7 @@ prbReadInputGTF() {
       WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
       prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
 
-      ${prb} python3 - <<-EOF
+      ${prb} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
