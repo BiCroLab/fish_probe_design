@@ -69,7 +69,7 @@ prbReadInputGTF() {
     | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
    fi
 
-   echo -e "Saved ${WORKDIR}/prb_gtf.id.txt.gz" 
+   ### echo -e "Saved ${WORKDIR}/prb_gtf.id.txt.gz" 
 
 
    time zcat "${WORKDIR}/prb_gtf.id.txt.gz" | while IFS= read -r INPUT_ID; do
