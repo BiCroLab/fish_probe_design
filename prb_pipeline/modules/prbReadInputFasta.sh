@@ -28,6 +28,8 @@ prbReadInputFasta() {
     done
 
 
+    echo -e "prbReadInputFasta - reading input: $(date)" 
+
     if [[ "${INPUT_FASTA}" == *.gz || "${INPUT_FASTA}" == *.gzip ]]; then
      mkdir -p -m 770 ${WORKDIR}; zcat ${INPUT_FASTA} > "${WORKDIR}/${INPUT_FASTA}.tmp"
     else 
