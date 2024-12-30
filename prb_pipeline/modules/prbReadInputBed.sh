@@ -26,13 +26,19 @@ prbReadInputBed() {
             --oligo-spacing-factor|-s) SPACER_FACTOR="${2:-$SPACER_FACTOR}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --flag-mode|-f) FLAGMODE="${2:-$FLAGMODE}"; shift ;;
+            --singularity-image|-X) CONTAINER="${2}"; shift ;;
         esac
         shift
     done
 
 
    ### load bedtools from module or conda enviroment
-   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
+   ### module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
+   ### -- Accessing singularity container  
+   module load --silent singularity
+   WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+   BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
+   PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} python3"
 
 
    echo -e "prbReadInputBed - reading input: $(date)" 
@@ -43,8 +49,6 @@ prbReadInputBed() {
    else
     cat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { print $1, $2, $3, $1"_"$2"_"$3 }' | gzip > ${WORKDIR}/prb_bed.id.txt.gz
    fi
-
-   ### echo -e "Saved ${WORKDIR}/prb_bed.id.txt.gz" 
 
 
    zcat ${WORKDIR}/prb_bed.id.txt.gz | while read -r INPUT_ID; do
@@ -83,7 +87,9 @@ prbReadInputBed() {
 
 
     ### Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+    #bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+    ${BEDTOOLS} getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+
 
     ### Adjusting input sequence based on strandness ---- not implemented
     # if [[ ${STRANDNESS} == "-" ]]; --------------------  
@@ -153,11 +159,11 @@ prbReadInputBed() {
 
     ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
     ### Accessing singularity container to access the required prb-dependencies
-    CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
-    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-    prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
+    # CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
+    # WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+    # PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} python3"
 
-    ${prb} python3 - <<-EOF &> /dev/null
+    ${PRB} - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
