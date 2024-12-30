@@ -26,6 +26,7 @@ if [[ ${INPUT_GTF} != "" ]]; then
   -w ${WORKDIR}          \
   -l ${OLIGO_LENGTH}     \
   -s ${SPACING_FACTOR}   \
+  -X ${CONTAINER}        \
   --ccds-only 
 
 fi 
@@ -38,7 +39,8 @@ if [[ ${INPUT_FASTA} != "" ]]; then
   -g ${GENOME}           \
   -w ${WORKDIR}          \
   -l ${OLIGO_LENGTH}     \
-  -s ${SPACING_FACTOR}
+  -s ${SPACING_FACTOR}   \
+  -X ${CONTAINER}      
 
 fi
 
@@ -50,7 +52,8 @@ if [[ ${INPUT_BED} != "" ]]; then
   -g ${GENOME}           \
   -w ${WORKDIR}          \
   -l ${OLIGO_LENGTH}     \
-  -s ${SPACING_FACTOR}
+  -s ${SPACING_FACTOR}   \
+  -X ${CONTAINER}
 
 fi
 
@@ -63,7 +66,7 @@ fi
 ### Creating genome and blacklist reference and temporary objects.
 ### Finally, link all reference objects to each sub-directory
 
-prbReferenceCreate -w ${WORKDIR} -g ${GENOME} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}
+prbReferenceCreate -w ${WORKDIR} -g ${GENOME} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH} -X ${CONTAINER}
 
 
 
@@ -79,7 +82,7 @@ CPU_PER_JOB=10 ; MEM_PER_JOB="40G" ; TIME_PER_JOB="05:00:00"
 
 slurmArrayLauncher \
  --command-name "prbRun_nHUSH"    \
- --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}" \
+ --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH} -X ${CONTAINER}" \
  --cpu-per-job "${CPU_PER_JOB}" \
  --mem-per-job "${MEM_PER_JOB}" \
  --time-req "${TIME_PER_JOB}" \
@@ -98,7 +101,7 @@ CPU_PER_JOB=10 ; MEM_PER_JOB="40G" ; TIME_PER_JOB="06:00:00"
 
 slurmArrayLauncher \
  --command-name "prbRun_cQuery" \
- --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}" \
+ --command-args "-c ${CPU_PER_JOB} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH} -X ${CONTAINER}" \
  --cpu-per-job "${CPU_PER_JOB}" \
  --mem-per-job "${MEM_PER_JOB}" \
  --time-req "${TIME_PER_JOB}" \
