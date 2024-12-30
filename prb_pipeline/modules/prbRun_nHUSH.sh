@@ -15,6 +15,7 @@ prbRun_nHUSH() {
               --length-oligos|-l) LENGTH="${2:-LENGTH}"; shift ;;
               --sub-length|-s) SUBLENGTH="${2:-SUBLENGTH}"; shift ;;
               --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
+              --singularity-image|-X) CONTAINER="${2}"; shift ;; 
               *) echo "Unknown option: $1" >&2; return 1 ;;
           esac
           shift
@@ -28,9 +29,9 @@ prbRun_nHUSH() {
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
 
       ### -- Accessing singularity container  
-      CONTAINER="/group/bienko/containers/prb.sif" ; module load --silent singularity
+      module load --silent singularity
       WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER} prb"
+      prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} prb"
 
       ### -- Printing some messages
       echo -e "Launching Job: ${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
