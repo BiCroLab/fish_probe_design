@@ -36,10 +36,10 @@ prbReadInputGTF() {
 
 
    ### load bedtools from module or conda enviroment
-   #module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
+   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
    module load --silent singularity
    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-   BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
+   # BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
    PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
    echo -e "prbReadInputGTF - reading input: $(date)" 
@@ -157,7 +157,7 @@ prbReadInputGTF() {
 
 
     ### 4. Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    ${BEDTOOLS} getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
+    bedtools getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
 
     ### 5. Concatenating FASTA of all isoform-specific exons
     zcat ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz \
