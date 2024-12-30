@@ -13,6 +13,7 @@ prbRun_cQuery() {
               --length-oligos|-l) LENGTH="${2:-LENGTH}"; shift ;;
               --sub-length|-s) SUBLENGTH="${2:-SUBLENGTH}"; shift ;;
               --flag-mode|-f) FLAGMODE="${2:-FLAGMODE}"; shift ;;
+              --singularity-image|-X) CONTAINER="${2}"; shift ;;
               *) echo "Unknown option: $1" >&2; return 1 ;;
           esac
           shift
@@ -34,9 +35,10 @@ prbRun_cQuery() {
 
 
       ### -- Accessing singularity container  
-      CONTAINER="/group/bienko/containers/prb.sif" ; module load --silent singularity
+      # CONTAINER="/group/bienko/containers/prb.sif"
+      module load --silent singularity
       WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER} prb"
+      prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} prb"
 
       ### -- Printing some messages
       echo -e "Launching Job: ${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
@@ -75,7 +77,55 @@ prbRun_cQuery() {
       ${prb} summarize_probes_final
       ${prb} visual report
 
-      ### Space to add extra visual reports / summaries, if needed
+
+
+
+      ### Extra visual report:
+      ${prb} R --slave <<EOF
+
+      WORKDIR = "$WORKDIR"
+      
+      library(ggplot2)
+      library(data.table)
+
+      tsv = list.files(paste0(WORKDIR,"data/final_probes/"), pattern=".tsv", recursive=T, full.names=T)
+      roi = list.files(paste0(WORKDIR,"data/rois/"), pattern=".tsv", recursive=T, full.names=T)
+
+      pw = stringr::str_split(basename(tsv),pattern = "pw")[[1]][2]
+      pw = gsub(pw, pattern=".tsv", replacement = "")
+      tsv = fread(tsv)
+      roi = fread(roi)
+      
+      rStart = roi[,1][[1]]
+      rEnd = roi[,2][[1]]
+      maxOligos = roi[,7][[1]]
+      foundOligos = nrow(tsv)
+
+      pl.title = basename(WORKDIR) 
+      pl.subtitle = paste0(foundOligos, " / ", maxOligos, " oligos")
+      
+      plot = ggplot(tsv) + theme_void() +
+       geom_rect(aes(xmin=start, xmax=end, ymin=3, ymax=5), fill="red",color=NA) +
+       annotate("segment", x=rStart, xend=rEnd, y=2.5, yend=2.5) +
+       labs(title=pl.title, subtitle = pl.subtitle) +
+       coord_cartesian(ylim=c(1,8)) +
+       theme(
+        plot.title = element_text(size=15, hjust=0.5),
+        plot.subtitle = element_text(size=12, hjust=0.5)
+            )
+
+       ggsave(
+        plot,  
+        filename = paste0(WORKDIR,"data/visual_summary/oligo_distribution.png"),
+        width=7, 
+        height = 2,
+        dpi = 300,
+        bg = "white"
+              )
+       
+EOF
+
+
 
 }
 
