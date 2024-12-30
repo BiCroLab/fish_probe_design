@@ -29,14 +29,18 @@ prbReadInputGTF() {
             --oligo-spacing-factor|-s) SPACER_FACTOR="${2:-$SPACER_FACTOR}"; shift ;;
             --flag-mode|-f) FLAGMODE="${2:-$FLAGMODE}"; shift ;;
             --work-dir|-w) WORKDIR="${2}"; shift ;;
+            --singularity-image|-X) CONTAINER="${2}"; shift ;;
         esac
         shift
     done
 
 
    ### load bedtools from module or conda enviroment
-   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
-
+   #module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
+   module load --silent singularity
+   WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+   BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
+   PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
    echo -e "prbReadInputGTF - reading input: $(date)" 
 
@@ -68,8 +72,6 @@ prbReadInputGTF() {
                 print X[j], X[i], X[k] ; break; }}}}}}}' \
     | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
    fi
-
-   ### echo -e "Saved ${WORKDIR}/prb_gtf.id.txt.gz" 
 
 
    time zcat "${WORKDIR}/prb_gtf.id.txt.gz" | while IFS= read -r INPUT_ID; do
@@ -155,7 +157,7 @@ prbReadInputGTF() {
 
 
     ### 4. Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    bedtools getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
+    ${BEDTOOLS} getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
 
     ### 5. Concatenating FASTA of all isoform-specific exons
     zcat ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz \
@@ -205,7 +207,6 @@ prbReadInputGTF() {
     header="${h01}\t${h02}\t${h03}\t${h04}\t${h05}\t${h06}\t${h07}\t${h08}\t${h09}\t${h10}\t${h11}\t${h12}\t${h13}\t${h14}\t${h15}"
     echo -e ${header} > ${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/data/rois/all_regions.tsv
 
-    ### tocheck, maybe skippable now;
     ANNOT_ISOFORM="${WORKDIR}/split/${GENE_NAME}/${TRANSCRIPT_ID}/iso/${TRANSCRIPT_ID}.annot.tsv.gz"
     ### Calculating transcript length to assign < Window_start > and < Window_end >
     WIDTH_ISOFORM=$(zcat ${ANNOT_ISOFORM%%.tsv.gz}.concat.fa.gz | grep -v "^>" | wc -c)
@@ -251,11 +252,8 @@ prbReadInputGTF() {
 
       ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
       ### Accessing singularity container to access the required prb-dependencies
-      CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
-      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
 
-      ${prb} python3 - <<-EOF &> /dev/null
+      ${PRB} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
