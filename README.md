@@ -21,17 +21,17 @@ The **BED-based workflow** can be used to test entire ungapped regions based on 
 
 ## Inputs / Parameters Tuning
 
-The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules*. 
+The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules* and a `prb.config` file.
 
 <br>
 
-> General Variables 
-- `${WORKDIR}` path to any working directory
+> General Variables that can be adjusted in `prb.config`
+- `${BASEDIR}` / `${WORKDIR}` base path and output directory name
 - `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
-- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br><br>
-- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACER} )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
+- `${SPACING_FACTOR }` value affecting average oligo density (default is 10bp). <br><br><br>
+- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACING_FACTOR } )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
 - For example: `5000bp region` / (`40bp oligos` + `10bp spacing`) would yield up to 100 oligos.
 
 
@@ -62,7 +62,7 @@ The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manag
 
 <br>
 
-All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be customized as:
+All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be further customized as:
 
  | *slurmArrayLauncher* | Description |
  | --------------------------  | ----------- |
@@ -83,8 +83,8 @@ In short, `--parallel-jobs`, `--slurm-array-max`, `--slurm-hpc-max` can be used 
 ## Usage:
 
 1. Either download or clone the entire github repository
-2. Define user-specific variables in `main.sh`
-3. Launch the whole pipeline ➤ ```sbatch main.sh```<br>
+2. Define user-specific variables in `prb.config`
+3. Launch the whole pipeline ➤ ```bash main.sh```<br>
 
 <br><br>
 
@@ -103,11 +103,16 @@ For every input, one `final_probes` directory can be located as depicted below:
 ┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `final_probes`         
 ┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `regions`         
 ┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `rois`     
+┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `visual_summary`    
 ┃   ┃   ┃   ┣╍╍╍╍ ***input2***         
 ┃   ┃   ┃   ┣╍╍╍╍ ***input3***          
 ┃   ┃   ┃   ┣╍╍╍╍ etc...     
 
-In `final_probes`, .... work in progress blabla
+<br> 
+
+In every `final_probes` directory, users will find an output `.tsv` that lists the final set of oligonucleotides. The filename also includes a ***pw*** score value and the ***number of found oligos***, which must be equal or inferior to ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACING_FACTOR } )`. Depending on the input, users might want to double-check whether the number of found oligos dropped significantly with respect to the original ***N*** and control if oligos were evenly distributed throughout the sequence or if they tend to form local clusters. To some extent, the ***pw*** score indicates the overall quality of the entire probeset and, if possible, users should avoid ⁻¹ / ⁻² values. <br><b>
+All `visual_summary` directories include a few reports that indicate average oligo distance and quality.
+ < work in progress > 
 
 
 <br>
@@ -138,7 +143,5 @@ Some steps consume around **40GB RAM** when using human genome assemblies, but t
 
 <br><br><br>
 
-blabla: other notes to be moved later on:
-Since many transcript isoforms differ for relatively short sequences, we advise against using the resulting oligos to selectively target a specific isoform. Instead, pooling together results obtained from all isoforms of the same gene would allow to target any possibly expressed transcript of the gene of interest.
 
 
