@@ -23,6 +23,7 @@ prbReadInputFasta() {
             --length-oligos|-l) LENGTH="${2}"; shift ;;
             --oligo-spacing-factor|-s) SPACER_FACTOR="${2:-$SPACER_FACTOR}"; shift ;;
             --flag-mode|-f) FLAGMODE="${2:-$FLAGMODE}"; shift ;;
+            --singularity-image|-X) CONTAINER="${2}"; shift ;;
         esac
         shift
     done
@@ -63,7 +64,6 @@ prbReadInputFasta() {
         ### Compressing output and removing temporary files
         cat "${OUTPUT_TMP}" | gzip > "${OUTPUT_FASTA}" && rm "${OUTPUT_TMP}"
         WIDTH_ISOFORM=$(zcat ${OUTPUT_FASTA} | grep -v "^>" | wc -c)
-        ### echo -e " >>> ${HEADER}\t(+)\t${WIDTH_ISOFORM}bp"
 
 
     ### --------------- Step 2: Generating data/rois and data/region
@@ -123,9 +123,10 @@ prbReadInputFasta() {
 
         ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
         ### Accessing singularity container to access the required prb-dependencies
-        CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
+        #CONTAINER="/group/bienko/containers/prb.sif"
+        module load --silent singularity
         WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-        prb="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER}"
+        prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
         ${prb} python3 - <<-EOF &> /dev/null
 import os
