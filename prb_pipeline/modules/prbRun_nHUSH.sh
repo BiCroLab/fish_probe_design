@@ -24,7 +24,7 @@ prbRun_nHUSH() {
 
       ### The ${GROUP} variable is inherited from <slurmArrayLauncher>
       ### Every row in ${GROUP} will be used to access a different sub-directory.
-    
+     
       ### Updating ${WORKDIR} to match the current input
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
 
