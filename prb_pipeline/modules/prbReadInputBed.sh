@@ -33,11 +33,11 @@ prbReadInputBed() {
 
 
    ### load bedtools from module or conda enviroment
-   ### module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
+   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
    ### -- Accessing singularity container  
    module load --silent singularity
    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-   BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
+   ### BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
    PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} python3"
 
 
@@ -87,8 +87,8 @@ prbReadInputBed() {
 
 
     ### Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    #bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
-    ${BEDTOOLS} getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+    bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+    #${BEDTOOLS} getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
 
 
     ### Adjusting input sequence based on strandness ---- not implemented
