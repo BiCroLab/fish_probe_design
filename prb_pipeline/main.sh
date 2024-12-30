@@ -24,6 +24,7 @@ VarReader() { cat ${CONFIG} | grep -w ${1} | grep -v "#" | cut -f 2 -d "=" | sed
  OLIGO_LENGTH=$(VarReader "OLIGO_LENGTH")
  OLIGO_SUBLENGTH=$(VarReader "OLIGO_SUBLENGTH")
 
+ SING_IMAGE=$(VarReader "IMAGE")
 
 ### -----------------------------------------------------------------------------------
 ### Starting prb pipeline and passing all variables
@@ -37,6 +38,7 @@ export WORKDIR=${WORKDIR} PIPELINE_MODS=${PIPELINE_MODS}
 export GENOME=${GENOME} SPACING_FACTOR=${SPACING_FACTOR}
 export INPUT_GTF=${INPUT_GTF} INPUT_FASTA=${INPUT_FASTA} INPUT_BED=${INPUT_BED}
 export OLIGO_LENGTH=${OLIGO_LENGTH} OLIGO_SUBLENGTH=${OLIGO_SUBLENGTH}
+export CONTAINER=${SING_IMAGE}
 
 sbatch                  \
  --job-name="prbMain"   \
