@@ -7,6 +7,7 @@ prbReferenceCreate() {
             --work-dir|-w) WORKDIR="${2}"; shift ;;
             --genome-reference|-g) GENOME="${2}"; shift ;;
             --length-oligos|-l) LENGTH="${2}"; shift ;;
+            --singularity-image|-X) CONTAINER="${2}"; shift ;;
         esac
         shift
     done
@@ -19,9 +20,10 @@ prbReferenceCreate() {
      echo -e "Generating References and Blacklist - $(date)"; 
 
      ### -- Accessing singularity container  
-     CONTAINER="/group/bienko/containers/prb.sif" ; module load --silent singularity
+     module load --silent singularity
      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-     nHUSH="singularity exec --bind /group/ --bind /scratch/ --workdir ${WORKTMP} ${CONTAINER} nhush"
+     nHUSH="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} nhush"
+     SAMTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} samtools"
 
 
 
@@ -39,10 +41,10 @@ prbReferenceCreate() {
      fi
 
      ### Splitting FASTA into separate files
-     module load --silent samtools
+     #module load --silent samtools
      for CHR in $(cat ${WORKDIR}/data/ref/chrs.list); do
       ### echo -e "Splitting ${REF} > ${CHR}"
-      samtools faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
+      ${SAMTOOLS} faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
      done
 
 
@@ -83,7 +85,7 @@ prbReferenceCreate() {
    if [[ ! -f "${HUSH_TMPFILE}" ]]; then
 
      ### Generating genome.aD reference files. This might take around 20-30 minutes.
-     CONTAINER="/group/bienko/containers/prb.sif" ; module load --silent singularity
+     module load --silent singularity
      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
      HUSH="singularity exec --bind /group/ --workdir ${WORKTMP} ${CONTAINER} hushp"
 
