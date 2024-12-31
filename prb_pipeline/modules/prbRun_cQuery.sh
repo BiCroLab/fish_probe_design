@@ -80,50 +80,50 @@ prbRun_cQuery() {
 
 
 
-      ### Extra visual report:
-      ${prb} R --slave <<EOF
+#       ### Extra visual report:
+#       ${prb} R --slave <<EOF
 
-      WORKDIR = "$WORKDIR"
+#       WORKDIR = "$WORKDIR"
       
-      library(ggplot2)
-      library(data.table)
+#       library(ggplot2)
+#       library(data.table)
 
-      tsv = list.files(paste0(WORKDIR,"data/final_probes/"), pattern=".tsv", recursive=T, full.names=T)
-      roi = list.files(paste0(WORKDIR,"data/rois/"), pattern=".tsv", recursive=T, full.names=T)
+#       tsv = list.files(paste0(WORKDIR,"data/final_probes/"), pattern=".tsv", recursive=T, full.names=T)
+#       roi = list.files(paste0(WORKDIR,"data/rois/"), pattern=".tsv", recursive=T, full.names=T)
 
-      pw = stringr::str_split(basename(tsv),pattern = "pw")[[1]][2]
-      pw = gsub(pw, pattern=".tsv", replacement = "")
-      tsv = fread(tsv)
-      roi = fread(roi)
+#       pw = stringr::str_split(basename(tsv),pattern = "pw")[[1]][2]
+#       pw = gsub(pw, pattern=".tsv", replacement = "")
+#       tsv = fread(tsv)
+#       roi = fread(roi)
       
-      rStart = roi[,1][[1]]
-      rEnd = roi[,2][[1]]
-      maxOligos = roi[,7][[1]]
-      foundOligos = nrow(tsv)
+#       rStart = roi[,1][[1]]
+#       rEnd = roi[,2][[1]]
+#       maxOligos = roi[,7][[1]]
+#       foundOligos = nrow(tsv)
 
-      pl.title = basename(WORKDIR) 
-      pl.subtitle = paste0(foundOligos, " / ", maxOligos, " oligos")
+#       pl.title = basename(WORKDIR) 
+#       pl.subtitle = paste0(foundOligos, " / ", maxOligos, " oligos")
       
-      plot = ggplot(tsv) + theme_void() +
-       geom_rect(aes(xmin=start, xmax=end, ymin=3, ymax=5), fill="red",color=NA) +
-       annotate("segment", x=rStart, xend=rEnd, y=2.5, yend=2.5) +
-       labs(title=pl.title, subtitle = pl.subtitle) +
-       coord_cartesian(ylim=c(1,8)) +
-       theme(
-        plot.title = element_text(size=15, hjust=0.5),
-        plot.subtitle = element_text(size=12, hjust=0.5)
-            )
+#       plot = ggplot(tsv) + theme_void() +
+#        geom_rect(aes(xmin=start, xmax=end, ymin=3, ymax=5), fill="red",color=NA) +
+#        annotate("segment", x=rStart, xend=rEnd, y=2.5, yend=2.5) +
+#        labs(title=pl.title, subtitle = pl.subtitle) +
+#        coord_cartesian(ylim=c(1,8)) +
+#        theme(
+#         plot.title = element_text(size=15, hjust=0.5),
+#         plot.subtitle = element_text(size=12, hjust=0.5)
+#             )
 
-       ggsave(
-        plot,  
-        filename = paste0(WORKDIR,"data/visual_summary/oligo_distribution.png"),
-        width=7, 
-        height = 2,
-        dpi = 300,
-        bg = "white"
-              )
+#        ggsave(
+#         plot,  
+#         filename = paste0(WORKDIR,"data/visual_summary/oligo_distribution.png"),
+#         width=7, 
+#         height = 2,
+#         dpi = 300,
+#         bg = "white"
+#               )
        
-EOF
+# EOF
 
 
 
