@@ -19,6 +19,14 @@ The **BED-based workflow** can be used to test entire ungapped regions based on 
 <br><br>
 
 
+## Installation:
+
+Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
+(((<ins>work in progress</ins>))) To recreate it, see: [prb_docker](./prb_docker)
+
+<br><br>
+
+
 ## Inputs / Parameters Tuning
 
 The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules* and a `prb.config` file.
@@ -39,14 +47,14 @@ The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manag
 
  | Module | Input | Arguments |
  | -------- | ----------- | ----------- | 
- | prbReadInputGTF |  `-i ${GTF}`  | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
- | prbReadInputBed | `-i ${BED}` |  `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
- | prbReadInputFasta | `-i ${FASTA}` | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${SPACER}` |
+ | prbReadInputGTF |  `-i ${GTF}`  | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
+ | prbReadInputBed | `-i ${BED}` | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
+ | prbReadInputFasta | `-i ${FASTA}` | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
  | <br> | |
- | prbReferenceCreate | | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}` |
+ | prbReferenceCreate | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
  | <br> | |
- | prbRun_nHUSH | |  `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}` |
- | prbRun_cQuery | | `-g ${GENOME} -w ${WORKDIR} -l ${OLIGO_LENGTH} -s ${OLIGO_SUBLENGTH}` |
+ | prbRun_nHUSH | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
+ | prbRun_cQuery | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
 
 <br>
 
@@ -100,13 +108,6 @@ All `visual_summary` directories include a few reports that indicate average oli
 
 <br>
 
-
-## Installation:
-
-Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
-(((<ins>work in progress</ins>))) To recreate it, see: [prb_docker](./prb_docker)
-
-<br>
 
 #### Required Resources / Speed :
 
