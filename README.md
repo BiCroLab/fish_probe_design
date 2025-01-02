@@ -1,6 +1,6 @@
 # FISH Probe Design Pipelines + SLURM parallelization
 
-<br><br>
+<br>
 
 Pipeline to design one FISH probeset for each provided input. Three input types are allowed:
 
@@ -10,13 +10,13 @@ Pipeline to design one FISH probeset for each provided input. Three input types 
 2. Genomic regions in *bed* / *bed.gz* format
 3. Nucleotide sequences in *fasta* / *fasta.gz* format
 
+<br>
 
-<br><br>
 The **GTF-based workflow** takes a GTF annotation file to retrieve coordinates and nucleotide sequences of each gene, transcript and exon. In this workflow, all exons belonging to the same transcript isoform are merged together (intronic regions are dropped) to form one concatenated sequence featuring exon-exon junctions, which is used to design a certain number of kmer oligos to be used in RNA FISH experiments.
 
 The **BED-based workflow** can be used to test entire ungapped regions based on their coordinates. The **FASTA-based workflow** can be used to test nucleotide sequences, being therefore useful in situations where coordinates or identifiers are not available.
 
----- 
+<br><br>
 
 
 ## Inputs / Parameters Tuning
@@ -30,8 +30,8 @@ The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manag
 - `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
-- `${SPACING_FACTOR }` value affecting average oligo density (default is 10bp). <br><br><br>
-- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACING_FACTOR } )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
+- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br><br>
+- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACER} )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
 - For example: `5000bp region` / (`40bp oligos` + `10bp spacing`) would yield up to 100 oligos.
 
 
@@ -59,26 +59,6 @@ The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manag
 <br>
 
 ---
-
-<br>
-
-All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be further customized as:
-
- | *slurmArrayLauncher* | Description |
- | --------------------------  | ----------- |
- | `--command-name` | "*prbRun*" command ( either *prbRun_nHUSH* / *prbRun_cQuery* ) | 
- | `--command-args` | command-specific arguments of the supplied function | 
- | `--parallel-jobs` | maximum number of jobs allowed to run in parallel in each slurm array (default: 30) |
- | `--slurm-array-max` | maximum number of inputs that can fit in each slurm array (default: 200) | 
- | `--slurm-hpc-max` | maximum number of array jobs that can exist in the whole HPC (default: 800) |
- | `--cpu-per-job` | cpu requested for each slurm array (default:  5CPU) |
- | `--mem-per-job` | memory requested for each slurm array (default: 40GB) |
- | `--time-req`  | run time requested for each slurm array (default: 24h) |
- | `--work-dir` | path to the working directory where the specified "*prbRun*" command will run | 
-            
-In short, `--parallel-jobs`, `--slurm-array-max`, `--slurm-hpc-max` can be used to tune SLURM parallelization. Typically, SLURM does not allow users to submit an infinite number of jobs in the HPC, but there is a default HPC limit. To avoid potential crashes, `--slurm-hpc-max` controls the maximum number of either running / queued jobs in the HPC. New jobs are submitted in batches of `--slurm-array-max`, but only if the total number of jobs would not exceed `--slurm-hpc-max`. Finally, to limit resource overconsumption, only `--parallel-jobs` per array are allowed to run simultaneously. These three parameters can be combined depending on the available HPC resources and individual needs.
-
-<br><br><br>
 
 ## Usage:
 
@@ -136,12 +116,31 @@ Some steps consume around **40GB RAM** when using human genome assemblies, but t
 - [`prbReadInput`](./prb_pipeline/modules/prbReadInputGTF.sh) functions should be quick, unless several inputs are provided.
 - [`prbReferenceCreate.sh`](./prb_pipeline/modules/prbReferenceCreate.sh) ~ 1-2 hours with 10 CPU / 40GB (only once).
 - [`prbRun_nHUSH`](./prb_pipeline/modules/prbRun_nHUSH.sh) ~ 1-2 hours with 10 CPU / 40GB (for each input).
-- [`prbRun_cQuery`](./prb_pipeline/modules/prbRun_cQuery.sh) ~ 1-8 hours with 10 CPU / 40GB (for each input).
+- [`prbRun_cQuery`](./prb_pipeline/modules/prbRun_cQuery.sh) ~ 1-4 hours with 10 CPU / 40GB (for each input).
 
 
+---
 
+#### Advanced SLURM settings
+
+All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can be further customized as described below. Users can modify these settings in the `"./modules/prbMain.sh"` script. In short, `--parallel-jobs`, `--slurm-array-max`, `--slurm-hpc-max` can be used to tune SLURM parallelization. Typically, SLURM does not allow users to submit an infinite number of jobs in the HPC, but there is a default HPC limit. To avoid potential crashes, `--slurm-hpc-max` controls the maximum number of either running / queued jobs in the HPC. New jobs are submitted in batches of `--slurm-array-max`, but only if the total number of jobs would not exceed `--slurm-hpc-max`. Finally, to limit resource overconsumption, only `--parallel-jobs` per array are allowed to run simultaneously. These three parameters can be combined depending on the available HPC resources and individual needs.
+
+ | *slurmArrayLauncher* | Description |
+ | --------------------------  | ----------- |
+ | `--command-name` | "*prbRun*" command ( either *prbRun_nHUSH* / *prbRun_cQuery* ) | 
+ | `--command-args` | command-specific arguments of the supplied function | 
+ | `--parallel-jobs` | maximum number of jobs allowed to run in parallel in each slurm array (default: 30) |
+ | `--slurm-array-max` | maximum number of inputs that can fit in each slurm array (default: 200) | 
+ | `--slurm-hpc-max` | maximum number of array jobs that can exist in the whole HPC (default: 800) |
+ | `--cpu-per-job` | cpu requested for each slurm array (default:  5CPU) |
+ | `--mem-per-job` | memory requested for each slurm array (default: 40GB) |
+ | `--time-req`  | run time requested for each slurm array (default: 24h) |
+ | `--work-dir` | path to the working directory where the specified "*prbRun*" command will run | 
+            
 
 <br><br><br>
+
+
 
 
 
