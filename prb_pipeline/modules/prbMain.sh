@@ -113,20 +113,12 @@ slurmArrayLauncher \
 
 
 
+### Waiting for prbRun_nHUSH jobs to finish
+slurmBlocker --job-name "prbRun_cQuery" -s 60
+
+### Removing temporary files and directories
+prbTmpClear -w ${WORKDIR}
+echo -e "Process completed, exiting prbMain!\n$(date)"
 
 
 
-
-
-
-### In case nHUSH crashed and cQuery started, you might want to run:
-
-        # rm -rf ${WORKDIR}/split/regions/*/data/db
-        # rm -rf ${WORKDIR}split/regions/*/data/db_tsv
-        # rm -rf ${WORKDIR}split/regions/*/data/HUSH_c*
-        # rm -rf ${WORKDIR}split/regions/*/data/melt
-        # rm -rf ${WORKDIR}split/regions/*/data/secs
-        # rm -rf ${WORKDIR}split/regions/*/data/probe_candidates
-        # rm -rf ${WORKDIR}split/regions/*/data/logfiles
-        # rm -rf ${WORKDIR}split/regions/*/data/selected_probes
-        # rm -rf ${WORKDIR}split/regions/*/data/final_probes
