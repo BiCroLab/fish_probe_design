@@ -1,6 +1,7 @@
 # FISH Probe Design Pipelines + SLURM parallelization
 
-<br>
+
+## Introduction:
 
 Pipeline to design one FISH probeset for each provided input. Three input types are allowed:
 
@@ -21,50 +22,34 @@ The **BED-based workflow** can be used to test entire ungapped regions based on 
 
 ## Installation:
 
-Currently based on `/group/bienko/containers/prb.sif` singularity image.<br>
-(((<ins>work in progress</ins>))) To recreate it, see: [prb_docker](./prb_docker)
+Based on `/group/bienko/containers/prb.sif` image and **SLURM** to launch sbatch scripts.<br>
+Steps require `module load singularity`, `module load bedtools`,  `module load samtools`.
+
+
 
 <br><br>
 
 
 ## Inputs / Parameters Tuning
 
-The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules* and a `prb.config` file.
+The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules*.<br>
+All variables can be controlled and edited from a `prb.config` text file: <br><br>
 
-<br>
-
-> General Variables that can be adjusted in `prb.config`
-- `${BASEDIR}` / `${WORKDIR}` base path and output directory name
-- `${GENOME}` path to genome annotation in `.fa` / `.fa.gz` format. and having `.fai` / `.gzi` index files.
+- `${INPUT_GTF}` annotation file in `.gtf` / `.gtf.gz` format.
+- `${INPUT_FASTA}` annotation file in `.fasta` / `.fasta.gz` format.
+- `${INPUT_BED}` annotation file in `.bed` / `.bed.gz` format.
+  <br><br>
+- `${GENOME}` path to genome `.fa` / `.fa.gz` having `.fai` / `.gzi` index.
+- `${BASEDIR}` / `${WORKDIR}` base path and output directory name.
+  <br><br>
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
-- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br><br>
-- For each input, ***N*** represents the maximum number of oligos to be searched for. This value is adjusted as ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACER} )`. If ***N*** suitable candidates are not found, the pipeline will progressively reduce ***N*** and try again.
-- For example: `5000bp region` / (`40bp oligos` + `10bp spacing`) would yield up to 100 oligos.
+- `${SPACER}` value affecting average oligo density (default is 10bp). <br><br>
+
+For each input, ***N*** represents the maximum number of oligos to be found and it corresponds to `${WIDTH} / (${OLIGO_LENGTH} + ${SPACER})`. If ***N*** suitable candidates are not found, the pipeline will reduce ***N*** and retry. For example: `5000bp region` / (`40bp oligos` + `10bp spacer`) could yield up to a maximum of 100 oligos.
 
 
-<br>
-
- | Module | Input | Arguments |
- | -------- | ----------- | ----------- | 
- | prbReadInputGTF |  `-i ${GTF}`  | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
- | prbReadInputBed | `-i ${BED}` | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
- | prbReadInputFasta | `-i ${FASTA}` | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${SPACER}` |
- | <br> | |
- | prbReferenceCreate | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
- | <br> | |
- | prbRun_nHUSH | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
- | prbRun_cQuery | | `-g ${GENOME}`<br>`-w ${WORKDIR}`<br>`-l ${OLIGO_LENGTH}`<br>`-s ${OLIGO_SUBLENGTH}` |
-
-<br>
-
-> Input Variables (at least one input must be provided)
-
-- `${GTF}` path to gene annotation in `.gtf` / `.gtf.gz` format.
-- `${BED}` path to bed annotation in `.bed` / `.bed.gz` format. 
-- `${FASTA}` path to sequences in `.fasta` / `.fasta.gz` format.
-
-<br>
+<br><br>
 
 ---
 
