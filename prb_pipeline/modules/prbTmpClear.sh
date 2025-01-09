@@ -38,6 +38,20 @@ prbTmpClear() {
   ### -- {WORKDIR}/split/*/*/data/rois
   ### -- {WORKDIR}/split/*/*/data/visual_summary
 
+  
+  mkdir -p -m 770 ${WORKDIR}/prb_results
+
+  for PRB in ${WORKDIR}/split/*/*/data/final_probes/*.tsv; do
+
+   ### ---- Copying all final_probes results in a common [ ${WORKDIR}/prb_results ]   
+   ID=$( echo ${PRB} | awk '{split($0, A, "split"); print A[2]}' | cut -f 3 -d "/" )
+   INFO=$(basename ${PRB} | sed -e s'/probe_roi_1.//'g -e s'/.tsv//'g)
+   cp ${PRB} ${WORKDIR}/prb_results/prb_${ID}_${INFO}.out
+
+  done
+  
+    
+
 
 }
 
