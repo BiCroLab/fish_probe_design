@@ -158,10 +158,6 @@ prbReadInputBed() {
 
 
     ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
-    ### Accessing singularity container to access the required prb-dependencies
-    # CONTAINER="/group/bienko/containers/prb.sif"; module load --silent singularity
-    # WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-    # PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} python3"
 
     ${PRB} - <<-EOF &> /dev/null
 import os
