@@ -1,10 +1,6 @@
 FROM continuumio/miniconda3
 
-# Set the environment variable for non-interactive installs
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Set locale
-# RUN locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8 LANGUAGE=en_US.UTF-8
 
 # ======================================================================================================
@@ -26,12 +22,10 @@ RUN pip install probe_design==0.2.45 \
     git+https://github.com/ggirelli/oligo-melting.git \
     prbdes==0.1.2
 
-# Add Conda's binary to the global PATH
+
 ENV PATH="/opt/conda/envs/base/bin:$PATH"
 
-# Install bedtools and samtools with specific versions
 RUN conda install -y -c bioconda -c conda-forge bedtools=2.31.1 samtools && conda clean --all --yes
-# Set up conda environment for automatic activation
 RUN echo "conda activate base" >> ~/.bashrc
 
 # ======================================================================================================
