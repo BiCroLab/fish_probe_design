@@ -12,20 +12,17 @@ prbReferenceCreate() {
         shift
     done
 
-        
+
+   ### -- Accessing singularity container  
+   ${SINGULARITY_ACTIVATE}
+   WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+   IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
+     
    ### Checking if ${BLACKLIST_OUT} exists. Skip the block if it already exists.
    BLACKLIST_OUT="${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T100.fa"
 
    if [[ ! -f "${BLACKLIST_OUT}" || ! -s "${BLACKLIST_OUT}" ]]; then 
      echo -e "Generating References and Blacklist - $(date)"; 
-
-     ### -- Accessing singularity container  
-     module load --silent singularity
-     WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-     nHUSH="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} nhush"
-     SAMTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} samtools"
-
-
 
      ### Creating reference folders and collecting reference annotations
      mkdir -p ${WORKDIR}/data/ref && cd ${WORKDIR}/data
@@ -41,10 +38,8 @@ prbReferenceCreate() {
      fi
 
      ### Splitting FASTA into separate files
-     #module load --silent samtools
      for CHR in $(cat ${WORKDIR}/data/ref/chrs.list); do
-      ### echo -e "Splitting ${REF} > ${CHR}"
-      ${SAMTOOLS} faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
+      ${IMG} samtools faidx ${WORKDIR}/data/ref/genome.fa "${CHR}" > "${WORKDIR}/data/ref/${CHR}.fa"
      done
 
 
@@ -63,8 +58,8 @@ prbReferenceCreate() {
        -e "${LOGS}/slurm-%x_%A_%a.txt" \
        -o "${LOGS}/slurm-%x_%A_%a.txt" \
        --wrap="
-       cd ${WORKDIR} && mkdir -p -m 770 ${WORKDIR}/data/blacklist
-       ${nHUSH} find-abundant --file ${WORKDIR}/data/ref/genome.fa --length ${LENGTH} --threshold 100 \
+       cd ${WORKDIR} && mkdir -p -m 770 ${WORKDIR}/data/blacklist; ${SINGULARITY_ACTIVATE}
+       ${IMG} nhush find-abundant --file ${WORKDIR}/data/ref/genome.fa --length ${LENGTH} --threshold 100 \
         --out ${WORKDIR}/data/blacklist/genome.fa.abundant_L${LENGTH}_T100.fa
               "
 
@@ -85,7 +80,6 @@ prbReferenceCreate() {
    if [[ ! -f "${HUSH_TMPFILE}" ]]; then
 
      ### Generating genome.aD reference files. This might take around 20-30 minutes.
-     module load --silent singularity
      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
      HUSH="singularity exec --bind /group/ --workdir ${WORKTMP} ${CONTAINER} hushp"
 
@@ -105,7 +99,14 @@ prbReferenceCreate() {
       --export=ALL \
       -e "${LOGS}/slurm-%x_%A_%a.txt" \
       -o "${LOGS}/slurm-%x_%A_%a.txt" \
-      --wrap="cd ${WORKDIR}/data/ref/ && ${HUSH} -r ${WORKDIR}/data/ref/genome.fa -l ${SUBLENGTH} -q no_folder -t ${CPU}"
+      --wrap="
+       ${SINGULARITY_ACTIVATE};
+       cd ${WORKDIR}/data/ref/ && ${IMG} hushp \
+        -r ${WORKDIR}/data/ref/genome.fa \
+        -l ${SUBLENGTH} \
+        -q no_folder \
+        -t ${CPU}
+             "
 
      ### Holding execution to let the process finish
      slurmBlocker --job-name "prbReferenceHush" -s 5
