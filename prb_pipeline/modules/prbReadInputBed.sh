@@ -32,14 +32,10 @@ prbReadInputBed() {
     done
 
 
-   ### load bedtools from module or conda enviroment
-   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
    ### -- Accessing singularity container  
-   module load --silent singularity
+   ${SINGULARITY_ACTIVATE}
    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-   ### BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
-   PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} python3"
-
+   IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
    echo -e "prbReadInputBed - reading input: $(date)" 
 
@@ -87,12 +83,8 @@ prbReadInputBed() {
 
 
     ### Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
-    #${BEDTOOLS} getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
+    ${IMG} bedtools getfasta -fi ${GENOME} -bed ${REGION_FILE} | gzip > ${REGION_FILE%%.bed}.concat.fa.gz;
 
-
-    ### Adjusting input sequence based on strandness ---- not implemented
-    # if [[ ${STRANDNESS} == "-" ]]; --------------------  
 
     ### Printing final width before exiting
     WIDTH_ISOFORM=$(zcat ${REGION_FILE%%.bed}.concat.fa.gz | grep -v "^>" | wc -c)
@@ -159,7 +151,7 @@ prbReadInputBed() {
 
     ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
 
-    ${PRB} - <<-EOF &> /dev/null
+    ${IMG} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
