@@ -9,6 +9,7 @@
 ### 1. Importing Pipeline Modules
 echo -e "Importing Pipeline Modules:"
 for MOD in $(find "${PIPELINE_MODS}" -name "*.sh" ! -name "prbMain.sh"); do source "${MOD}"; done
+echo -e "\nSingularity Image:\n${CONTAINER}\n"
 ### ----------------------------------------------------------------------------------
   
 ### 2. Input Pre-Processing ----------------------------------------------------------------
