@@ -10,7 +10,7 @@ CONFIG="${DIRECTORY}/prb.config"
 
 ### -----------------------------------------------------------------------------------
 ### Reading variables from <prb.config>
-VarReader() { cat ${CONFIG} | grep -w ${1} | grep -v "#" | cut -f 2 -d "=" | sed 's/[" ]//g' ; }
+VarReader() { cat ${CONFIG} | grep -w ${1} | grep -v "#" | cut -f 2 -d "=" | sed s'/ "//'g | sed s'/"//'g ; }
 
  BASEDIR=$( VarReader "BASEDIR" ) 
  WORKDIR=${BASEDIR}/$( VarReader "WORKDIR" ) && mkdir -p -m 770 ${WORKDIR}
@@ -25,6 +25,7 @@ VarReader() { cat ${CONFIG} | grep -w ${1} | grep -v "#" | cut -f 2 -d "=" | sed
  OLIGO_SUBLENGTH=$(VarReader "OLIGO_SUBLENGTH")
 
  SING_IMAGE=$(VarReader "IMAGE")
+ SINGULARITY_ACTIVATE=$(VarReader "SINGULARITY_ACTIVATE_COMMAND")
 
 ### -----------------------------------------------------------------------------------
 ### Starting prb pipeline and passing all variables
@@ -38,7 +39,7 @@ export WORKDIR=${WORKDIR} PIPELINE_MODS=${PIPELINE_MODS}
 export GENOME=${GENOME} SPACING_FACTOR=${SPACING_FACTOR}
 export INPUT_GTF=${INPUT_GTF} INPUT_FASTA=${INPUT_FASTA} INPUT_BED=${INPUT_BED}
 export OLIGO_LENGTH=${OLIGO_LENGTH} OLIGO_SUBLENGTH=${OLIGO_SUBLENGTH}
-export CONTAINER=${SING_IMAGE}
+export CONTAINER=${SING_IMAGE} SINGULARITY_ACTIVATE=${SINGULARITY_ACTIVATE}
 
 sbatch                  \
  --job-name="prbMain"   \
