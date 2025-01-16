@@ -1,7 +1,7 @@
 FROM continuumio/miniconda3
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LC_ALL=en_US.UTF-8 LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LANG=en_US.UTF-8
 
 # ======================================================================================================
 # 1. Installing Dependencies
@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     gcc make git libcairo2-dev rpm2cpio cpio liblua5.3-dev lua5.3 \
     pkg-config rename tcl autoconf-archive locales libcjson-dev curl wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
     r-base r-cran-ggplot2 r-cran-data.table r-cran-cowplot && \
@@ -21,7 +23,6 @@ RUN apt-get update && apt-get install -y python3.10 python3-pip && \
 RUN pip install probe_design==0.2.45 \
     git+https://github.com/ggirelli/oligo-melting.git \
     prbdes==0.1.2
-
 
 ENV PATH="/opt/conda/envs/base/bin:$PATH"
 
@@ -53,6 +54,7 @@ ENV PKG_CONFIG_PATH="/nHUSH/pkg-config:${PKG_CONFIG_PATH}"
 RUN cd /nHUSH && make && chmod u+x makedeb && ./makedeb && apt install ./nhush_*_amd64.deb
 RUN cd /fish-qc && make && make install
 ENV PATH="/usr/local/bin:${PATH}"
+
 
 # ======================================================================================================
 # 4. Setting the environment variables for paths
