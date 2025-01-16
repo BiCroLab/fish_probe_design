@@ -20,9 +20,14 @@ prbRun_cQuery() {
       done
 
 
+      ### -- Accessing singularity container  
+      ${SINGULARITY_ACTIVATE}
+      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+      IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
+
+
       ### The ${GROUP} variable is inherited from <slurmArrayLauncher>
       ### Every row in ${GROUP} will be used to access a different sub-directory.
-
       ### Updating ${WORKDIR} to match the current input
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
 
@@ -33,40 +38,24 @@ prbRun_cQuery() {
       STEPDOWN=$( echo | awk -v W=${MAX_OLIGOS} -v P=${STPERC} '{ M=W/100*P; printf "%.f\n",int(M+0.5)}')
       echo -e "Looking for ${MAX_OLIGOS} with --stepdown: ${STEPDOWN}"
 
-
-      ### -- Accessing singularity container  
-      # CONTAINER="/group/bienko/containers/prb.sif"
-      module load --silent singularity
-      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} prb"
-
       ### -- Printing some messages
       echo -e "Launching Job: ${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
       echo -e "Requested CPUs: ${CPU_PER_JOB}"
       echo -e "Working Directory: \"$(pwd)\""
-
 
       if [[ -z $(ls ${WORKDIR}/data/candidates/*.uint8 2>/dev/null) ]]; then 
        touch ${WORKDIR}/error.log && echo -e "Missing Files: check \"data/candidates/\"" > ${WORKDIR}/error.log
        echo "Necessary files are missing! Check if nHUSH has run correctly"; exit 1;
       fi
 
-
       ### -- Running prb functions
-
-      ## Quite quick. Add header description to this step?
-      ${prb} reform_hush_combined ${FLAGMODE} ${LENGTH} ${SUBLENGTH} 3  
-
-      ## Quite quick. Add header description to this step?
-      ${prb} melt_secs_parallel ${FLAGMODE}
-
-      ## Quite quick. Add header description to this step?
-      ${prb} build-db_BL -f q_bl -m 32 -i 6 -L ${LENGTH} -c 100 -d 8 -T 72 -y
-
+      ${IMG} prb reform_hush_combined ${FLAGMODE} ${LENGTH} ${SUBLENGTH} 3  
+      ${IMG} prb melt_secs_parallel ${FLAGMODE}
+      ${IMG} prb build-db_BL -f q_bl -m 32 -i 6 -L ${LENGTH} -c 100 -d 8 -T 72 -y
 
       ### Launching Cycling Query:
       echo -e "$(date) <---- starting"  
-      ${prb} cycling_query -s ${FLAGMODE} -L ${LENGTH} -m 8 -c 100 -t ${CPU_PER_JOB} -g 2500 -stepdown ${STEPDOWN} -greedy
+      ${IMG} prb cycling_query -s ${FLAGMODE} -L ${LENGTH} -m 8 -c 100 -t ${CPU_PER_JOB} -g 2500 -stepdown ${STEPDOWN} -greedy
 
       ### Clearing large temporary files. This part should be fixed, as it is still problematic.
       rm ${WORKDIR}/data/ref/genome.fa.aD 
@@ -74,56 +63,53 @@ prbRun_cQuery() {
       rm ${WORKDIR}/data/ref/genome.fa.aH*
       echo -e "$(date) <---- ending"
 
-      ${prb} summarize_probes_final
-      ${prb} visual report
+      ${IMG} prb summarize_probes_final
+      ${IMG} prb visual report
 
+      ### Extra visual report:
+      ${IMG} R --slave <<EOF
 
-
-
-#       ### Extra visual report:
-#       ${prb} R --slave <<EOF
-
-#       WORKDIR = "$WORKDIR"
+      WORKDIR = "$WORKDIR"
       
-#       library(ggplot2)
-#       library(data.table)
+      library(ggplot2)
+      library(data.table)
 
-#       tsv = list.files(paste0(WORKDIR,"data/final_probes/"), pattern=".tsv", recursive=T, full.names=T)
-#       roi = list.files(paste0(WORKDIR,"data/rois/"), pattern=".tsv", recursive=T, full.names=T)
+      tsv = list.files(paste0(WORKDIR,"data/final_probes/"), pattern=".tsv", recursive=T, full.names=T)
+      roi = list.files(paste0(WORKDIR,"data/rois/"), pattern=".tsv", recursive=T, full.names=T)
 
-#       pw = stringr::str_split(basename(tsv),pattern = "pw")[[1]][2]
-#       pw = gsub(pw, pattern=".tsv", replacement = "")
-#       tsv = fread(tsv)
-#       roi = fread(roi)
+      pw = stringr::str_split(basename(tsv),pattern = "pw")[[1]][2]
+      pw = gsub(pw, pattern=".tsv", replacement = "")
+      tsv = fread(tsv)
+      roi = fread(roi)
       
-#       rStart = roi[,1][[1]]
-#       rEnd = roi[,2][[1]]
-#       maxOligos = roi[,7][[1]]
-#       foundOligos = nrow(tsv)
+      rStart = roi[,1][[1]]
+      rEnd = roi[,2][[1]]
+      maxOligos = roi[,7][[1]]
+      foundOligos = nrow(tsv)
 
-#       pl.title = basename(WORKDIR) 
-#       pl.subtitle = paste0(foundOligos, " / ", maxOligos, " oligos")
+      pl.title = basename(WORKDIR) 
+      pl.subtitle = paste0(foundOligos, " / ", maxOligos, " oligos")
       
-#       plot = ggplot(tsv) + theme_void() +
-#        geom_rect(aes(xmin=start, xmax=end, ymin=3, ymax=5), fill="red",color=NA) +
-#        annotate("segment", x=rStart, xend=rEnd, y=2.5, yend=2.5) +
-#        labs(title=pl.title, subtitle = pl.subtitle) +
-#        coord_cartesian(ylim=c(1,8)) +
-#        theme(
-#         plot.title = element_text(size=15, hjust=0.5),
-#         plot.subtitle = element_text(size=12, hjust=0.5)
-#             )
+      plot = ggplot(tsv) + theme_void() +
+       geom_rect(aes(xmin=start, xmax=end, ymin=3, ymax=5), fill="red",color=NA) +
+       annotate("segment", x=rStart, xend=rEnd, y=2.5, yend=2.5) +
+       labs(title=pl.title, subtitle = pl.subtitle) +
+       coord_cartesian(ylim=c(1,8)) +
+       theme(
+        plot.title = element_text(size=15, hjust=0.5),
+        plot.subtitle = element_text(size=12, hjust=0.5)
+            )
 
-#        ggsave(
-#         plot,  
-#         filename = paste0(WORKDIR,"data/visual_summary/oligo_distribution.png"),
-#         width=7, 
-#         height = 2,
-#         dpi = 300,
-#         bg = "white"
-#               )
+       ggsave(
+        plot,  
+        filename = paste0(WORKDIR,"data/visual_summary/oligo_distribution.png"),
+        width=7, 
+        height = 2,
+        dpi = 300,
+        bg = "white"
+              )
        
-# EOF
+EOF
 
 
 
