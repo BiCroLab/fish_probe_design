@@ -35,12 +35,10 @@ prbReadInputGTF() {
     done
 
 
-   ### load bedtools from module or conda enviroment
-   module load --silent bedtools2/2.31.0 ### todo, just build bedtools in sing image
-   module load --silent singularity
+   ### Accessing singularity container to access the required prb-dependencies
+   ${SINGULARITY_ACTIVATE}
    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-   # BEDTOOLS="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} bedtools"
-   PRB="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
+   IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
    echo -e "prbReadInputGTF - reading input: $(date)" 
 
@@ -74,7 +72,7 @@ prbReadInputGTF() {
    fi
 
 
-   time zcat "${WORKDIR}/prb_gtf.id.txt.gz" | while IFS= read -r INPUT_ID; do
+    zcat "${WORKDIR}/prb_gtf.id.txt.gz" | while IFS= read -r INPUT_ID; do
 
     ### Reading input variables and setting paths
     TRANSCRIPT_ID=$(echo ${INPUT_ID} | awk '{print $1}')
@@ -92,7 +90,6 @@ prbReadInputGTF() {
     ### ----------------------------------------------------------------------
     ### --- Part 1 -----------------------------------------------------------
     ### ----------------------------------------------------------------------
-
 
     ### 1. Checking inputs
     ### Breaking code if FASTA has weird chromosome names in its header
@@ -155,9 +152,8 @@ prbReadInputGTF() {
     zcat ${ANNOT_FILTERED} | awk -v ID=${TRANSCRIPT_ID} 'BEGIN{FS=OFS="\t"} { 
             if ( $8 == ID ) { print $0 }}' | gzip > ${ANNOT_ISOFORM}
 
-
     ### 4. Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
-    bedtools getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
+    ${IMG} bedtools getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
 
     ### 5. Concatenating FASTA of all isoform-specific exons
     zcat ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz \
@@ -187,12 +183,9 @@ prbReadInputGTF() {
     echo -e "${TRANSCRIPT_ID}\t(${STRANDNESS})\t${WIDTH_ISOFORM}" >> ${WORKDIR}/prb_width_stats.txt
 
 
-
-
     ### ----------------------------------------------------------------------
     ### --- Part 2 -----------------------------------------------------------
     ### ----------------------------------------------------------------------
-
 
     ### Extracting Genome Reference Prefix
     REF=$(basename ${GENOME} | sed -e 's/.fa.gz$//' -e 's/.fa$//' -e 's/.fasta$//' -e 's/.fna.gz$//')
@@ -251,9 +244,7 @@ prbReadInputGTF() {
 
 
       ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
-      ### Accessing singularity container to access the required prb-dependencies
-
-      ${PRB} python3 - <<-EOF &> /dev/null
+      ${IMG} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
