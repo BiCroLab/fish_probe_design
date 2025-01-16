@@ -29,6 +29,11 @@ prbReadInputFasta() {
     done
 
 
+    ### Accessing singularity container to access the required prb-dependencies
+    ${SINGULARITY_ACTIVATE}
+    WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+    IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"    
+
     echo -e "prbReadInputFasta - reading input: $(date)" 
 
     if [[ "${INPUT_FASTA}" == *.gz || "${INPUT_FASTA}" == *.gzip ]]; then
@@ -56,17 +61,17 @@ prbReadInputFasta() {
 
     for DIR in ${WORKDIR}/split/fasta/*; do 
     
-        HEADER=$(basename ${DIR})
-        OUTPUT_DIREC="${WORKDIR}/split/fasta/${HEADER}/"
-        OUTPUT_TMP="${OUTPUT_DIREC}/seq_${HEADER}.fa"
-        OUTPUT_FASTA="${OUTPUT_DIREC}/${HEADER}.concat.fa.gz"
+       HEADER=$(basename ${DIR})
+       OUTPUT_DIREC="${WORKDIR}/split/fasta/${HEADER}/"
+       OUTPUT_TMP="${OUTPUT_DIREC}/seq_${HEADER}.fa"
+       OUTPUT_FASTA="${OUTPUT_DIREC}/${HEADER}.concat.fa.gz"
 
-        ### Compressing output and removing temporary files
-        cat "${OUTPUT_TMP}" | gzip > "${OUTPUT_FASTA}" && rm "${OUTPUT_TMP}"
-        WIDTH_ISOFORM=$(zcat ${OUTPUT_FASTA} | grep -v "^>" | wc -c)
+       ### Compressing output and removing temporary files
+       cat "${OUTPUT_TMP}" | gzip > "${OUTPUT_FASTA}" && rm "${OUTPUT_TMP}"
+       WIDTH_ISOFORM=$(zcat ${OUTPUT_FASTA} | grep -v "^>" | wc -c)
 
 
-    ### --------------- Step 2: Generating data/rois and data/region
+       ### --------------- Step 2: Generating data/rois and data/region
 
        ### Extracting Genome Reference Prefix
        REF=$(basename ${GENOME} | sed -e 's/.fa.gz$//' -e 's/.fa$//' -e 's/.fasta$//' -e 's/.fna.gz$//')
@@ -107,7 +112,6 @@ prbReadInputFasta() {
        ### Saving values to ./data/rois
        echo -e ${values} >> ${OUTPUT_DIREC}/data/rois/all_regions.tsv
 
-
        ### Saving sequences to ./data/regions
        FASTA_HEADER=">ROI_${v03} pos=${v04}:${v01}-${v02}"
 
@@ -122,13 +126,7 @@ prbReadInputFasta() {
 
 
         ### Running Python to mimic <get_oligos.py> starting directly from FASTA files
-        ### Accessing singularity container to access the required prb-dependencies
-        #CONTAINER="/group/bienko/containers/prb.sif"
-        module load --silent singularity
-        WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-        prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
-
-        ${prb} python3 - <<-EOF &> /dev/null
+        ${IMG} python3 - <<-EOF &> /dev/null
 import os
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from ifpd2q.scripts.extract_kmers import main as extract
