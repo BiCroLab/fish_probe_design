@@ -11,7 +11,13 @@ RUN apt-get update && apt-get install -y \
     pkg-config rename tcl autoconf-archive locales libcjson-dev curl wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN locale-gen en_US.UTF-8 && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+RUN apt-get update && apt-get install -y locales && \
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen en_US.UTF-8 && \
+    echo "LANG=en_US.UTF-8" > /etc/default/locale && \
+    echo "LC_ALL=en_US.UTF-8" >> /etc/environment && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 
 RUN apt-get update && apt-get install -y \
     r-base r-cran-ggplot2 r-cran-data.table r-cran-cowplot && \
