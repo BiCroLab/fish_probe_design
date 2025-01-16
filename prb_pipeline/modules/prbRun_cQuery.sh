@@ -20,16 +20,15 @@ prbRun_cQuery() {
       done
 
 
-      ### -- Accessing singularity container  
-      ${SINGULARITY_ACTIVATE}
-      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
-
-
       ### The ${GROUP} variable is inherited from <slurmArrayLauncher>
       ### Every row in ${GROUP} will be used to access a different sub-directory.
       ### Updating ${WORKDIR} to match the current input
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
+
+      ### -- Accessing singularity container  
+      ${SINGULARITY_ACTIVATE}
+      WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
+      IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
 
       ### Calculating minimum ${STEPDOWN} value for the current ${GENE_ID}
       ### By default, it will correspond to 5% of ${MAX_OLIGOS}    
