@@ -21,7 +21,6 @@ prbRun_nHUSH() {
           shift
       done
 
-
       ### The ${GROUP} variable is inherited from <slurmArrayLauncher>
       ### Every row in ${GROUP} will be used to access a different sub-directory.
      
@@ -29,18 +28,18 @@ prbRun_nHUSH() {
       WORKDIR=$( cat ${GROUP} | sed -n "${SLURM_ARRAY_TASK_ID}p" ) && cd ${WORKDIR}
 
       ### -- Accessing singularity container  
-      module load --silent singularity
+      ${SINGULARITY_ACTIVATE}
       WORKTMP="${WORKDIR}/singularity.tmp/" && mkdir -p -m 770 ${WORKTMP}
-      prb="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER} prb"
-
+      IMG="singularity exec --bind /group/ --bind ${WORKDIR} --workdir ${WORKTMP} ${CONTAINER}"
+      
       ### -- Printing some messages
       echo -e "Launching Job: ${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
       echo -e "Requested CPUs: ${CPU_PER_JOB}"
       echo -e "Working Directory: \"$(pwd)\""
 
       ### -- Running prb functions: [get_oligos] and [run_nHUSH]
-      ${prb} run_nHUSH -d ${FLAGMODE} -t ${CPU_PER_JOB} -L ${LENGTH} -l ${SUBLENGTH} -m 3 -i 14 -y
-      ### -- Temporary BugFix (04Dec2024)    
+      ${IMG} prb run_nHUSH -d ${FLAGMODE} -t ${CPU_PER_JOB} -L ${LENGTH} -l ${SUBLENGTH} -m 3 -i 14 -y
+      ### -- bugfix to correct some issues
       for FA in ${WORKDIR}/data/candidates/*fa; do sed -i 's/ pos=pos=/ pos=/g; s/:-1--1//g' ${FA}; done
 
 }
