@@ -13,4 +13,8 @@ All "*prbRun*" steps are controlled by the `slurmArrayLauncher` module, that can
  | `--mem-per-job` | memory requested for each slurm array (default: 40GB) |
  | `--time-req`  | run time requested for each slurm array (default: 24h) |
  | `--work-dir` | path to the working directory where the specified "*prbRun*" command will run | 
-            
+
+
+## Performance and Speed
+
+Some steps consume around **40GB RAM** when using human genome assemblies, but this value might be lower when using smaller genomes. Pipeline duration depends on the total number and type of provided inputs. Using **10 CPU**, **40GM RAM** and 100KB region, every input might take between 1-3 hours to be fully processed with [`prbRun_nHUSH`](./prb_pipeline/modules/prbRun_nHUSH.sh) and [`prbRun_cQuery`](./prb_pipeline/modules/prbRun_cQuery.sh). Highly problematic regions might require more time and yield suboptimal results. 
