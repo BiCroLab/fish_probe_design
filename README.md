@@ -62,31 +62,17 @@ For each input, ***N*** represents the maximum number of oligos to be found and 
 
 <br>
 
-## Outputs:
+## Outputs / Results Selection:
 
-For every input, one `final_probes` directory can be located as depicted below:
+##### Selecting Best Results 
+All results will be saved in a single `${WORKDIR}/prb_results` directory, with one file _.tsv_ for each provided input. Output filenames also includes the final ***number of found oligos***, which is equal or inferior to the maximum ***N*** value. At this stage, users might want to double-check whether the number of found oligos dropped significantly with respect to the original ***N*** and control if oligos were evenly distributed throughout the sequence. The ***pw*** score indicates the overall quality of the entire probeset and, if possible, users should try to avoid very low values. However, when using very short regions as inputs, users might consistently get low values. In most situations, provided that there are enough oligos to get a detectable fluorescence signal, users might safely ignore this parameter. General suggestions: (1) try to squeeze as many oligos as possible in a region to get stronger signal; (2) avoid excessively gapped probesets, as they could form separate dots.
 
-`${WORKDIR}`    
-┣╍╍╍╍  data       
-┃   ┣╍╍╍╍ blacklist       
-┃   ┣╍╍╍╍ ref   
-┣╍╍╍╍ split       
-┃   ┃   ┣╍╍╍╍ `gene` / `regions` / `fasta`         
-┃   ┃   ┃   ┣╍╍╍╍ ***input1***         
-┃   ┃   ┃   ┃   ┣╍╍╍╍ data         
-┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `final_probes`         
-┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `regions`         
-┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `rois`     
-┃   ┃   ┃   ┃   ┃   ┣╍╍╍╍ `visual_summary`    
-┃   ┃   ┃   ┣╍╍╍╍ ***input2***         
-┃   ┃   ┃   ┣╍╍╍╍ ***input3***          
-┃   ┃   ┃   ┣╍╍╍╍ etc...     
 
-<br> 
+##### Oligo-pools / Selecting Probes Amplification
+Since most companies that synthesize oligos apply big discounts when ordering several sequences at once, it is recommended to group together multiple probesets in one or few oligo-pools. All oligos of a given probeset will be further modified to attach two flanking sequences, called flaps (see [figure](./prb_pipeline/docs/oligo_pic.png)), which can be used to bind fluorophores as well as to selectively amplify the whole probeset from a oligo-pool mixture. The used flaps sequences should not hybridize with the target genome to prevent off-targets and interferences. We provide a series of scripts that can be used to calculate orthogonal kmers for flaps. It is necessary to compute these sequences only once for each reference genome. Combining different left and right flaps sequences can theoretically allow a large number of combinations with a relatively low number of orthogonal sequences. Some pre-computed 20-mers are available for the human genome and can be provided on request.
 
-In every `final_probes` directory, users will find an output `.tsv` that lists the final set of oligonucleotides. The filename also includes a ***pw*** score value and the ***number of found oligos***, which must be equal or inferior to ***N*** = `${WIDTH} / ( ${OLIGO_LENGTH} + ${SPACING_FACTOR } )`. Depending on the input, users might want to double-check whether the number of found oligos dropped significantly with respect to the original ***N*** and control if oligos were evenly distributed throughout the sequence or if they tend to form local clusters. To some extent, the ***pw*** score indicates the overall quality of the entire probeset and, if possible, users should avoid ⁻¹ / ⁻² values. However, when using very short regions as inputs, users might consistently get lower values.
-
-<br>
+##### Preparing Final Results
+This section explains how to integrate the previous information and prepare a final table that can be supplied to companies for oligo synthesis. A semi-manual approach is recommended here. Assuming that users are interested in visualizing several probes in the same experiment, while using a limited number of channels, they might want to consider what fluorescent color will be assigned to each probeset. In this situation, for probes of the same groups or conditions, it is advised to assign a common sequence for one of the two flap sequence. Although this is not fundamental, it can simplify and speed up pipetting for amplification, and also reduce the chances that wrong fluorophores could get attached to some oligos. This strategy can be ignored completely if users are interested in a relatively low number of regions and have an excess of orthogonal sequences to create unique combinations. We provide an example script that integrates flaps and oligo sequences and creates an output excel file that can be used for ordering probes.
 
 
 #### Advanced settings and information: 
@@ -94,6 +80,3 @@ In every `final_probes` directory, users will find an output `.tsv` that lists t
 Check [here](./prb_pipeline/docs/extra_slurm_settings.md) for further information. 
 
 <br><br>
-
-
-## 
