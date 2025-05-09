@@ -18,16 +18,14 @@ The **GTF-based workflow** takes a GTF annotation file to retrieve coordinates a
 
 ## Installation:
 
-The pipeline can be installed using this [`Dockerfile`](./installation/Dockerfile) to produce a Docker Container and convert it to Singularity Image. Both **Singularity** and **SLURM** are required to run the pipeline. The final Singularity Image can be provided on request. Otherwise, to install everything from scratch:
+The pipeline can be installed using this [`Dockerfile`](./installation/Dockerfile) to produce a Docker Container and convert it to Singularity Image. Both **Singularity** and **SLURM** are required to run the pipeline. The final Singularity Image can be provided on request. Otherwise, to install everything from scratch, use Docker and follow this guide:
 
 
-1. Download Files: <br> get the `./installation` repository and unzip all files
-  <br>
+1. Download Files: <br> `git clone https://github.com/BiCroLab/fish_probe_design.git`<br>`cd fish_probe_design/installation/`<br>`unzip prbdocker-master.zip && cd prbdocker-master.zip` <br>
 
-2. Create Docker Container: <br> `docker build -t prbdocker .`
-  <br>
+2. Create Docker Container: <br> `docker build -t prbdocker .` <br>
   
-3. Docker to Singularity: <br>
+3. Convert Docker to Singularity: <br>
 `docker run -v /var/run/docker.sock:/var/run/docker.sock -v ".":/output \` <br>
 `--privileged -t --rm singularityware/docker2singularity:v2.6 prbdocker`
   <br>
