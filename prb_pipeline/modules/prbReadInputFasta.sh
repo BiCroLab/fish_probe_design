@@ -44,19 +44,35 @@ prbReadInputFasta() {
 
     ### --------------- Step 1: Preparing FASTA sequences and initializing all sub-directories
     ### ---------------         Reading ${INPUT_FASTA} and saving one ${OUTPUT_FASTA} per header
-    while read -r LINE; do
-         if [[ ${LINE} == ">"* ]]; then
-             ### Reading FASTA header and replacing special symbols to generate ${OUTPUT_FASTA}
-             HEADER=$(echo ${LINE} | sed s'/>//'g | sed s'/ //'g | sed s'/:/_/'g | sed s'/-/_/'g | sed s'/+/_/'g) 
-             OUTPUT_DIREC="${WORKDIR}/split/fasta/${HEADER}/" && mkdir -p -m 770 ${OUTPUT_DIREC}
-             OUTPUT_TMP="${OUTPUT_DIREC}/seq_${HEADER}.fa"
-             ### Saving FASTA header in ${OUTPUT_FASTA}
-             echo -e "${LINE}" > "${OUTPUT_TMP}"
-         else
-             ### Saving FASTA sequence in ${OUTPUT_FASTA}
-             echo "${LINE}" >> "${OUTPUT_TMP}"
-         fi
-    done < "${WORKDIR}/${INPUT_FASTA}.tmp" && rm ${WORKDIR}/${INPUT_FASTA}.tmp
+      
+    awk -v WORKDIR="$WORKDIR" ' function adjust_header(h) {
+            gsub(/^>/, "", h)
+            gsub(/[ :+\/-]/, "_", h)
+            gsub(/_+/, "_", h)           # Collapse multiple underscores
+            sub(/^_/, "", h)             # Remove leading underscore if present
+            return h
+        }
+    /^>/ {
+        if (seq != "") {
+            print ">" clean_header > out
+            print seq >> out
+        }
+        raw_header = $0
+        clean_header = adjust_header(raw_header)
+        out = WORKDIR "/split/fasta/" clean_header "/seq_" clean_header ".fa"
+        system("mkdir -p -m 770 \"" WORKDIR "/split/fasta/" clean_header "\"")
+        seq = ""
+        next
+    }
+    {
+        seq = seq $0
+    }
+    END {
+        if (seq != "") {
+            print ">" clean_header > out
+            print seq >> out
+        }
+    }' "${WORKDIR}/${INPUT_FASTA}.tmp" && rm ${WORKDIR}/${INPUT_FASTA}.tmp
 
 
     for DIR in ${WORKDIR}/split/fasta/*; do 
