@@ -55,8 +55,7 @@ The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manag
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
 - `${SPACER}` value affecting average oligo density (default is 10bp). <br><br>
-
-For each input, ***N*** represents the maximum number of oligos to be found and it corresponds to `${WIDTH} / (${OLIGO_LENGTH} + ${SPACER})`. If ***N*** suitable candidates are not found, the pipeline will reduce ***N*** and retry. For example: `5000bp region` / (`40bp oligos` + `10bp spacer`) could yield up to a maximum of 100 oligos.
+  >   For each input, ***N*** represents the maximum number of oligos to be found. This number corresponds to `${WIDTH} / (${OLIGO_LENGTH} + ${SPACER})`. If ***N*** suitable candidates are not found, the pipeline will reduce ***N*** and retry. For example: `5000bp region` / (`40bp oligos` + `10bp spacer`) could yield up to a maximum of 100 oligos.
 
 <br>
 
