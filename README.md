@@ -44,16 +44,14 @@ The pipeline can be installed using this [`Dockerfile`](./installation/Dockerfil
 
 ## Inputs / Parameters Tuning
 
-The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules*.<br>
-All variables can be controlled and edited from a `prb.config` text file: <br><br>
+The pipeline consists of a [`main.sh`](./prb_pipeline/main.sh) script that manages a series of *modules*.<br> All variables can be controlled and edited from a `prb.config` text file: <br><br>
 
 - `${INPUT_GTF}` annotation file in `.gtf` / `.gtf.gz` format.
 - `${INPUT_FASTA}` annotation file in `.fasta` / `.fasta.gz` format.
 - `${INPUT_BED}` annotation file in `.bed` / `.bed.gz` format.
   <br><br>
-- `${GENOME}` path to genome `.fa` / `.fa.gz` having `.fai` / `.gzi` index.
-- `${BASEDIR}` / `${WORKDIR}` base path and output directory name.
-  <br><br>
+- `${GENOME}` path to genome `.fa` / `.fa.gz` having `.fai` / `.gzi` index.<br>All chromosome names should start with the prefix _chr_ and have no additional spaces.<br>Required index files can be produced with `samtools faidx`.<br><br>
+- `${BASEDIR}` / `${WORKDIR}` base path and output directory name. <br><br>
 - `${OLIGO_LENGTH}` length of probe oligos (default is 40).
 - `${OLIGO_SUBLENGTH}` sublength of probe oligos (default is 21).
 - `${SPACER}` value affecting average oligo density (default is 10bp). <br><br>
