@@ -59,8 +59,8 @@ prbReadInputFasta() {
         }
         raw_header = $0
         clean_header = adjust_header(raw_header)
-        out = WORKDIR "/split/fasta/" clean_header "/seq_" clean_header ".fa"
-        system("mkdir -p -m 770 \"" WORKDIR "/split/fasta/" clean_header "\"")
+        out = WORKDIR "/split/sequences/" clean_header "/seq_" clean_header ".fa"
+        system("mkdir -p -m 770 \"" WORKDIR "/split/sequences/" clean_header "\"")
         seq = ""
         next
     }
@@ -75,10 +75,10 @@ prbReadInputFasta() {
     }' "${WORKDIR}/${INPUT_FASTA}.tmp" && rm ${WORKDIR}/${INPUT_FASTA}.tmp
 
 
-    for DIR in ${WORKDIR}/split/fasta/*; do 
+    for DIR in ${WORKDIR}/split/sequences/*; do 
     
        HEADER=$(basename ${DIR})
-       OUTPUT_DIREC="${WORKDIR}/split/fasta/${HEADER}/"
+       OUTPUT_DIREC="${WORKDIR}/split/sequences/${HEADER}/"
        OUTPUT_TMP="${OUTPUT_DIREC}/seq_${HEADER}.fa"
        OUTPUT_FASTA="${OUTPUT_DIREC}/${HEADER}.concat.fa.gz"
 
