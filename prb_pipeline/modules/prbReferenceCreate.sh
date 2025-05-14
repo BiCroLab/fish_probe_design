@@ -32,9 +32,14 @@ prbReferenceCreate() {
      cat "${GENOME}.fai" | cut -f 1 | grep "chr" | grep -v "Un_" | grep -v "_alt" | grep -v "_random" \
       | grep -v "chrKI" | grep -v "chrGL" > ${WORKDIR}/data/ref/chrs.list
 
+     ### Adjusting format and saving uncompressed temporary genome file
      echo -e "Extracting reference genome.."
-     if [[ ! -f "${WORKDIR}/data/ref/genome.fa" ]]; then 
-      zcat ${GENOME} | awk '!/^>/ { print toupper($0) } /^>/ { print }' > "${WORKDIR}/data/ref/genome.fa"
+     if [[ ! -f "${WORKDIR}/data/ref/genome.fa" ]]; then
+       if [[ "${GENOME}" == *.gz ]]; then
+         zcat "${GENOME}" | awk '!/^>/ { print toupper($0) } /^>/ { print }' > "${WORKDIR}/data/ref/genome.fa"
+       else
+         cat "${GENOME}" | awk '!/^>/ { print toupper($0) } /^>/ { print }' > "${WORKDIR}/data/ref/genome.fa"
+       fi
      fi
 
      ### Splitting FASTA into separate files
