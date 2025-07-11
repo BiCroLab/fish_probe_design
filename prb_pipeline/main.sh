@@ -41,6 +41,13 @@ export INPUT_GTF=${INPUT_GTF} INPUT_FASTA=${INPUT_FASTA} INPUT_BED=${INPUT_BED}
 export OLIGO_LENGTH=${OLIGO_LENGTH} OLIGO_SUBLENGTH=${OLIGO_SUBLENGTH}
 export CONTAINER=${SING_IMAGE} SINGULARITY_ACTIVATE=${SINGULARITY_ACTIVATE}
 
+### -----------------------------------------------------------------------------------
+### Checking Variables:
+check_path() { if [ ! -e "$1" ]; then echo -e "❌ Error: wrong path: $1" ; exit 1 ; fi ; }
+check_path "${PRB_PIPELINE}"; check_path "${BASEDIR}"; check_path "${PIPELINE_MODS}"; check_path "${GENOME}"; check_path "${SING_IMAGE}"
+
+### -----------------------------------------------------------------------------------
+### Launching Main Workflow:
 sbatch                  \
  --job-name="prbMain"   \
  --nodes=1              \
