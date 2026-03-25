@@ -42,9 +42,21 @@ prbReadInputGTF() {
 
    echo -e "prbReadInputGTF - reading input: $(date)" 
 
+    #defining how to parse INPUT GTF with cat or zcat
+    if [[ "${ANNOT_INPUT}" == *.gz ]]; then
+            GTF_READ="zcat"
+        else
+            GTF_READ="cat"
+    fi
+
+        if [[ "${GENOME}" == *.gz ]]; then
+            GENOME_READ="zcat"
+        else
+            GENOME_READ="cat"
+    fi
+
    ### Extract gene_id, gene_name and transcript_id values from GTF
-   if [[ "${ANNOT_INPUT}" == *.gz || "${ANNOT_INPUT}" == *.gzip ]]; then
-    zcat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
+    $GTF_READ ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
       for(i in X) { if(X[i] ~ /gene_id/) {
          for(k in X) { if(X[k] ~ /gene_name/) {
            for(j in X) { if(X[j] ~ /transcript_id/) {
@@ -56,22 +68,8 @@ prbReadInputGTF() {
                 gsub("\"", "", X[j]); 
                 print X[j], X[i], X[k] ; break; }}}}}}}' \
     | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
-   else
-    cat ${ANNOT_INPUT} | awk 'BEGIN{FS=OFS="\t"} { split($9, X, ";");
-      for(i in X) { if(X[i] ~ /gene_id/) {
-         for(k in X) { if(X[k] ~ /gene_name/) {
-           for(j in X) { if(X[j] ~ /transcript_id/) {
-                gsub("gene_id", "", X[i]);
-                gsub("gene_name", "", X[k]);
-                gsub("transcript_id", "", X[j]);
-                gsub("\"", "", X[i]);
-                gsub("\"", "", X[k]);
-                gsub("\"", "", X[j]); 
-                print X[j], X[i], X[k] ; break; }}}}}}}' \
-    | sed s'/ //'g | sort | uniq | gzip > ${WORKDIR}/prb_gtf.id.txt.gz
-   fi
 
-
+    #from the text file created before, we extract info for final rois and fasta files > each should be the concatenation of specific exons per transcript
     zcat "${WORKDIR}/prb_gtf.id.txt.gz" | while IFS= read -r INPUT_ID; do
 
     ### Reading input variables and setting paths
@@ -93,7 +91,7 @@ prbReadInputGTF() {
 
     ### 1. Checking inputs
     ### Breaking code if FASTA has weird chromosome names in its header
-    if [[ ! $(zcat ${GENOME} | head -n1) =~ ">chr" ]]; then
+    if [[ ! $($GENOME_READ ${GENOME} | head -n1) =~ ">chr" ]]; then
       if [[ $(zcat ${ANNOT_FILTERED} | cut -f 1 | head -n1) =~ "chr" ]]; then
           echo -e "FASTA and BED chromosome names must match!";
           return
@@ -111,16 +109,16 @@ prbReadInputGTF() {
     ### Extracting Gene from input GTF object. CCDS-filtering is applied here, if requested.
     if [[ "$CCDS_FILTER" == "TRUE" ]]; then
         echo "Applying CCDS filter to ${TRANSCRIPT_ID}"
-        zcat ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} | grep -E 'tag "CCDS"|ccdsid'  > ${ANNOT_FILTERED_TMP}
+        ${GTF_READ} ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} | grep -E 'tag "CCDS"|ccdsid'  > ${ANNOT_FILTERED_TMP}
         if [[ ! -s ${ANNOT_FILTERED_TMP} ]]; then
             echo -e "No CCDS tag found. Ignoring CCDS filter."
-            zcat ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} > ${ANNOT_FILTERED_TMP}
+            ${GTF_READ} ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} > ${ANNOT_FILTERED_TMP}
           else
             echo "CCDS transcript found"
         fi
     else
         echo "Selecting ${TRANSCRIPT_ID} without considering CCDS."
-        zcat ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} > ${ANNOT_FILTERED_TMP}
+        ${GTF_READ} ${ANNOT_INPUT} | grep -w ${TRANSCRIPT_ID} > ${ANNOT_FILTERED_TMP}
     fi
           
 
@@ -149,8 +147,18 @@ prbReadInputGTF() {
 
 
     ### Extracting isoform-specific exons -- todo, check if this is still necessary
-    zcat ${ANNOT_FILTERED} | awk -v ID=${TRANSCRIPT_ID} 'BEGIN{FS=OFS="\t"} { 
-            if ( $8 == ID ) { print $0 }}' | gzip > ${ANNOT_ISOFORM}
+    #zcat ${ANNOT_FILTERED} | awk -v ID=${TRANSCRIPT_ID} 'BEGIN{FS=OFS="\t"} { 
+    #        if ( $8 == ID ) { print $0 }}' | gzip > ${ANNOT_ISOFORM}
+
+    zcat "${ANNOT_FILTERED}" \
+    |       awk -v ID="${TRANSCRIPT_ID}" '{
+                # trim whitespace in $8 if it exists
+                if (NF >= 8) gsub(/^ +| +$/, "", $8)
+
+                # if $8 exists and matches ID, or $8 is empty, print the line
+                if ($8 == ID || $8 == "" || NF < 8) print
+            }' \
+    |     gzip > "${ANNOT_ISOFORM}"
 
     ### 4. Fetching FASTA sequence of each exon. Input ${GENOME} requires .fai / .gzi index files.
     ${IMG} bedtools getfasta -fi ${GENOME} -bed ${ANNOT_ISOFORM} | gzip > ${ANNOT_ISOFORM%%.tsv.gz}.fa.gz;
