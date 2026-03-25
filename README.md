@@ -12,7 +12,12 @@ Pipeline to design one FISH probeset for each provided input. Three input types 
 
 <br>
 
-The **GTF-based workflow** takes a GTF annotation file to retrieve coordinates and nucleotide sequences of each gene, transcript and exon. In this workflow, all exons belonging to the same transcript isoform are merged together (intronic regions are dropped) to form one concatenated sequence featuring exon-exon junctions, which is used to design a certain number of kmer oligos to be used in RNA FISH experiments. The **BED-based workflow** can be used to test entire ungapped regions based on their coordinates. The **FASTA-based workflow** can be used to test nucleotide sequences, being therefore useful in situations where coordinates or identifiers are not available.
+The **GTF-based workflow** takes a GTF annotation file to retrieve coordinates and nucleotide sequences of each gene, transcript and exon. In this workflow, all exons belonging to the same transcript isoform are merged together (intronic regions are dropped) to form one concatenated sequence featuring exon-exon junctions, which is used to design a certain number of kmer oligos to be used in RNA FISH experiments. The **BED-based workflow** can be used to test entire ungapped regions based on their coordinates. 
+
+The **FASTA-based workflow** can be used to test nucleotide sequences, being therefore useful in situations where coordinates or identifiers are not available.⚠️ Important:
+Input sequences are assumed to be provided in 5′ → 3′ orientation.
+For DNA targets, the sequence can be supplied directly.
+For RNA FISH probe design (antisense probes), the input FASTA sequence must already be the reverse complement of the target RNA transcript, so that the designed oligos will hybridize correctly.
 
 <br>
 
